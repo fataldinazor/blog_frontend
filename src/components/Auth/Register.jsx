@@ -1,11 +1,11 @@
-import React from "react";
+// import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 function Register() {
   const location = useLocation();
   return (
     <div>
-        {console.log(location)}
+      {console.log(location)}
       {location.pathname === "/register/" && (
         <div id="register-choice" className="">
           <div id="user-register-link">

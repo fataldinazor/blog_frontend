@@ -25,10 +25,10 @@ const router = createBrowserRouter(
       <Route index element={<Homepage />} />
       <Route path="register" element={<Register/>}>
         <Route path="user" element={<UserRegister/>}/>
-        <Route path="author" elemenet={<AuthorRegister/>}/>
+        <Route path="author" element={<AuthorRegister/>}/>
       </Route>
       <Route path="login" element={<Login/>}/>
-      <Route path="articles" elements={<Articles />} >
+      <Route path="articles" element={<Articles />} >
         <Route path=":articleId" element={<ArticleId/>}/>
       </Route>
     </Route>
