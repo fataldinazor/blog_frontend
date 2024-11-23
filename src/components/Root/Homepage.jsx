@@ -1,9 +1,9 @@
-import React from 'react'
+// import React from 'react'
 
 function Homepage() {
   return (
-    <div>
-      
+    <div className="homepage-component">
+      <p>This is the homepage</p>
     </div>
   )
 }

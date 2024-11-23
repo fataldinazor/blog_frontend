@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { storingUserToLS } from "../../utiils/helper";
 
 function AuthorRegister() {
   const [formValues, setFormValues] = useState({
@@ -10,16 +13,69 @@ function AuthorRegister() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
+  const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
-      console.log(formValues);
-      createNewAuthor(formValues);
+      // console.log(formValues);
+      createNewAuthor(
+        formValues.fname,
+        formValues.lname,
+        formValues.username,
+        formValues.password,
+        formValues.confirmPassword
+      );
     }
   }, [formErrors]);
 
-  function createNewAuthor() {
-    console.log("New Author created");
+  async function createNewAuthor(
+    fname,
+    lname,
+    username,
+    password,
+    confirmPassword
+  ) {
+    // console.log("New Author created");
+    try {
+      const url = "http://localhost:3000/api/v1/auth/author/signup";
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fname,
+          lname,
+          username,
+          password,
+          confirmPassword,
+        }),
+      });
+      const result = await response.json();
+      const { success, token, user } = result;
+      if (success) {
+        const expiry = storingUserToLS(user, token);
+        if (typeof expiry === "number") {
+          setAuth({
+            isAuthenticated: true,
+            token: token,
+            userInfo: user,
+            expiry: expiry,
+          });
+          navigate("/articles");
+        } else {
+          // Show the error
+          console.log(expiry);
+          navigate("/login");
+        }
+      } else {
+        console.log(result);
+      }
+    } catch (error) {
+      console.log("Error: " + error);
+      console.log(error.response);
+    }
   }
 
   function validate(values) {
@@ -63,55 +119,57 @@ function AuthorRegister() {
   return (
     <div
       id="user-register"
-      className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md border"
+      className="max-w-lg mx-auto mt-10 p-6 bg-white rounded-lg shadow-md border"
     >
       <h1 className="text-2xl font-bold mb-6 text-center">
-        Register as a User
+        Register as an Author
       </h1>
       <form
         onSubmit={handleSubmit}
         noValidate
         autoComplete="off"
-        className="space-y-4"
+        className="space-y-2"
       >
-        {/* First Name */}
-        <div>
-          <label
-            htmlFor="fname"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            First
-          </label>
-          <input
-            type="text"
-            id="fname"
-            name="fname"
-            placeholder="First Name"
-            value={formValues.fname}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <p className="text-sm text-red-600 mt-1">{formErrors.fname}</p>
-        </div>
+        <div id="author-register-name" className="flex w-full">
+          {/* First Name */}
+          <div id="author-register-fname" className="mr-2 w-full">
+            <label
+              htmlFor="fname"
+              className="block text-gray-700 font-medium mb-1 w-full"
+            >
+              First
+            </label>
+            <input
+              type="text"
+              id="fname"
+              name="fname"
+              placeholder="First Name"
+              value={formValues.fname}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <p className="text-sm text-red-600 mt-1">{formErrors.fname}</p>
+          </div>
 
-        {/* lastName */}
-        <div>
-          <label
-            htmlFor="lname"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Last
-          </label>
-          <input
-            type="text"
-            id="lname"
-            name="lname"
-            placeholder="Last Name"
-            value={formValues.lname}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <p className="text-sm text-red-600 mt-1">{formErrors.lname}</p>
+          {/* lastName */}
+          <div id="author-register-lname" className="ml-2 w-full">
+            <label
+              htmlFor="lname"
+              className="block text-gray-700 font-medium mb-1"
+            >
+              Last
+            </label>
+            <input
+              type="text"
+              id="lname"
+              name="lname"
+              placeholder="Last Name"
+              value={formValues.lname}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <p className="text-sm text-red-600 mt-1">{formErrors.lname}</p>
+          </div>
         </div>
 
         {/* Username */}
@@ -179,7 +237,7 @@ function AuthorRegister() {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200 mt-10"
         >
           Submit
         </button>

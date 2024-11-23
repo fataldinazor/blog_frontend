@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from "../../context/AuthContext";
+import { storingUserToLS } from "../../utiils/helper";
 function UserRegister() {
   const [formValues, setFormValues] = useState({
     username: "",
@@ -10,8 +11,8 @@ function UserRegister() {
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
-  // useEffect(()=>console.log(formValues),[formValues])
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
       signupUser(
@@ -29,7 +30,7 @@ function UserRegister() {
       password:
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,20}$/i,
     };
-    
+
     if (!username) {
       errors.username = "Username is required!";
     } else if (!regExp.username.test(username)) {
@@ -66,9 +67,20 @@ function UserRegister() {
       console.log(result);
       const { success, token, user } = result;
       if (success) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("loggedInUser", user.username);
-        navigate(`/articles`);
+        const expiry = storingUserToLS(user, token);
+        if (typeof expiry === "number") {
+          setAuth({
+            isAuthenticated: true,
+            token: token,
+            userInfo: user,
+            expiry: expiry,
+          });
+          navigate("/articles");
+        } else {
+          // Show the error
+          console.log(expiry);
+          navigate("/login");
+        }
       } else if (!success) {
         console.log("Failed to create a new User");
       }
@@ -86,7 +98,6 @@ function UserRegister() {
 
   // handling the change on Input field
   function handleChange(e) {
-    console.log(e.target);
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
     // console.log(formValues);

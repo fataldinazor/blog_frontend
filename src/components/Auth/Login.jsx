@@ -1,13 +1,23 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { storingUserToLS } from "../../utiils/helper";
 
 function Login() {
-  const [formValues, setFormValues] = useState({});
+  const [formValues, setFormValues] = useState({ username: "", password: "" });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
-  useEffect(() => {
-    console.log(formValues);
-  }, [formValues]);
+  const navigate = useNavigate();
+  const { auth, setAuth } = useAuth();
 
+  //checking if formErrors exists else go for logigging in the client
+  useEffect(() => {
+    if (Object.keys(formErrors).length === 0 && isSubmit) {
+      loginUser(formValues.username, formValues.password);
+    }
+  }, [formErrors]);
+
+  // logging in the client from the backend
   async function loginUser(username, password) {
     try {
       const url = `http://localhost:3000/api/v1/auth/login`;
@@ -18,24 +28,54 @@ function Login() {
         },
         body: JSON.stringify({ username, password }),
       });
-      const result = response.json();
-      const {success, user, token}=result;
-      if(success){
-        localStorage.setItem("token", token);
-        localStorage.setItem("loggedInUser", user.username);
+      const result = await response.json();
+      const { success, user, token } = result;
+      if (success) {
+        const expiry = storingUserToLS(user, token);
+        if (typeof expiry === "number") {
+          setAuth({
+            isAuthenticated: true,
+            token: token,
+            userInfo: user,
+            expiry: expiry,
+          });
+          navigate("/articles");
+        } else {
+          // Show the error
+          console.log(expiry);
+          navigate("/login");
+        }
+      } else {
+        console.log(result);
       }
     } catch (error) {
       console.log(`Error:${error}`);
     }
   }
 
+  //validating the user i/p on frontend
+  function validate(values) {
+    let errors = {};
+    if (!values.username) {
+      errors.username = "Username is required!";
+    }
+    if (!values.password) {
+      errors.password = "Password is required";
+    }
+    return errors;
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     setIsSubmit(true);
-    if (Object.keys(formErrors).length === 0 && isSubmit) {
-      loginUser(formValues.username, formValues.password);
-    }
+    setFormErrors(validate(formValues));
   }
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  }
+
   return (
     <div
       id="user-register"
@@ -48,9 +88,9 @@ function Login() {
         onSubmit={handleSubmit}
         noValidate
         autoComplete="off"
-        className="space-y-4"
+        className="space-y-2"
       >
-        {/* Username */}
+        <p>{auth.token}</p>
         <div>
           <label
             htmlFor="username"
@@ -64,18 +104,12 @@ function Login() {
             name="username"
             placeholder="Enter your username"
             value={formValues.username}
-            onChange={(event) =>
-              setFormValues({
-                ...formValues,
-                username: event.currentTarget.value,
-              })
-            }
+            onChange={handleChange}
             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <p className="text-sm text-red-600 mt-1">{formErrors.username}</p>
         </div>
 
-        {/* Password */}
         <div>
           <label
             htmlFor="password"
@@ -89,18 +123,12 @@ function Login() {
             name="password"
             placeholder="Enter your password"
             value={formValues.password}
-            onChange={(event) =>
-              setFormValues({
-                ...formValues,
-                password: event.currentTarget.value,
-              })
-            }
+            onChange={handleChange}
             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <p className="text-sm text-red-600 mt-1">{formErrors.password}</p>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"

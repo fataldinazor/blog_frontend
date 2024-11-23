@@ -3,9 +3,9 @@ import Header from "./Header";
 
 function Root() {
   return (
-    <div>
-      <Header />
-      <Outlet />
+    <div className="root-component">
+        <Header />
+        <Outlet />
     </div>
   );
 }

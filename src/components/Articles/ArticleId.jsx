@@ -1,11 +1,8 @@
-import React from 'react'
+import React, { useEffect } from "react";
 
 function ArticleId() {
-  return (
-    <div>
-      
-    </div>
-  )
+
+  return <div></div>;
 }
 
-export default ArticleId
+export default ArticleId;
