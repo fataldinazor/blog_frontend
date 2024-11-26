@@ -10,16 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tinymce/tinymce-react": "^5.1.1",
     "formik": "^2.4.6",
+    "lodash.debounce": "^4.0.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "tinymce": "^7.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react-swc": "^3.7.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.13.0",
     "eslint-plugin-react": "^7.37.2",
