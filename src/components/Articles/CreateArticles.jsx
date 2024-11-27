@@ -19,7 +19,7 @@ function CreateArticles() {
   const [imageErrors, setImageErrors] = useState("");
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate=useNavigate();
-  const {apiUrl, cloudName, presetName}=config;
+  const {apiUrl, cloudName, presetName, tinymceKey}=config;
   
   //checks for clearing of the errors in form before sending the data to backend
   useEffect(() => {
@@ -195,7 +195,7 @@ function CreateArticles() {
       </div>
       <div id="new-post-content-div" className="w-4/6">
         <Editor
-          apiKey="hmw1o8dg0ayzsl22wh5okr67lsf9j4ro70rfmgh7k5xcsnwu"
+          apiKey={tinymceKey}
           onInit={(evt, editor) => (editorRef.current = editor)}
           initialValue="<p>This is the initial content of the editor.</p>"
           init={{
