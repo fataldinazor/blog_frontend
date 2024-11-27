@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.13.1",
+    "@cloudinary/url-gen": "^1.21.0",
     "@tinymce/tinymce-react": "^5.1.1",
+    "dotenv": "^16.4.5",
     "formik": "^2.4.6",
     "lodash.debounce": "^4.0.8",
     "react": "^18.3.1",
