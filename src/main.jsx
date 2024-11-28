@@ -5,8 +5,6 @@ import {
   createRoutesFromElements,
   RouterProvider,
   Route,
-  Routes,
-  Router,
 } from "react-router-dom";
 import "./index.css";
 //Root
@@ -61,6 +59,6 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+      <RouterProvider router={router} />
   </StrictMode>
 );

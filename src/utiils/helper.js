@@ -13,3 +13,7 @@ export function storingUserToLS(user, token) {
     return error;
   }
 }
+
+export function truncateString(str, count){
+  return str.substr(0,count)+"..."
+}

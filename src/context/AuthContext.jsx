@@ -15,7 +15,7 @@ function AuthProvider({ children }) {
   //checking for the token validity at each page change and
   // logging out the user if toekn expired
   useEffect(() => {
-    console.log(location);
+    // console.log(location);
     checkTokenValidity(auth.expiry);
   }, [location, auth.expiry]);
 
