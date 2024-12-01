@@ -2,39 +2,26 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation } from "react-router-dom";
 import {Link} from "react-router-dom"
-import config from "../../config";
 import { truncateString } from "../../utiils/helper";
 import ahead from "../../assets/ahead.svg";
+import { fetchAllPublishedArticles } from "../../api/articleApi";
 
 function Articles() {
   const [articles, setArticles] = useState([]);
   const { auth } = useAuth();
   const location = useLocation();
-  const { apiUrl } = config;
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchAllArticles();
+      try {
+        const result = await fetchAllPublishedArticles(auth.token);
+        setArticles(result);        
+      } catch (error) {
+        console.log("Failed to fetch artcles", error);
+      }
     };
     fetchData();
-  }, []);
-
-  async function fetchAllArticles() {
-    try {
-      const url = `${apiUrl}posts`;
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-      const result = await response.json();
-      setArticles(result);
-      console.log(result);
-    } catch (error) {
-      console.error("Error occured while contacting backend", error);
-    }
-  }
-
+  }, [auth.token]);
   console.log(articles);
   return (
     <div id="full-page" className="bg-slate-100">
@@ -73,7 +60,7 @@ function Articles() {
                     </span>
                     <div>
                       <Link
-                        to={`articles/${article.id}`}
+                        to={`${article.id}`}
                         className="block text-5xl font-bold text-gray-800 transition-colors duration-300 transform text-black hover:text-gray-600 hover:underline"
                         tabIndex="0"
                         role="link"

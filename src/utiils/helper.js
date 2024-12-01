@@ -15,5 +15,8 @@ export function storingUserToLS(user, token) {
 }
 
 export function truncateString(str, count){
+  if(str.length<count){
+    return str;
+  }
   return str.substr(0,count)+"..."
 }
