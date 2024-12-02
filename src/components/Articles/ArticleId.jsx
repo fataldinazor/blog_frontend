@@ -16,14 +16,14 @@ function MoreArticles() {
     const fetchData = async () => {
       const result = await fetchMoreArticles(auth.token, params.articleId);
       console.log(result);
-      if (result.length > 0) randomizeArticles(result);
+      if (result.length > 6) randomizeArticles(result);
+      else if(result.length>0 && result.length <=6) setMoreArticles[result];
       else {
         console.log("No Articles available to show right now");
       }
     };
     fetchData();
   }, [auth.token, params.articleId]);
-  // console.log(moreArticles);
 
   function randomizeArticles(moreArticles) {
     let articleArr = [];

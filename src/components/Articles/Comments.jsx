@@ -7,6 +7,7 @@ function Comments() {
   const [comments, setComments] = useState([]);
   const [userComment, setUserComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reload, setReload]= useState();
   const [isDropDownOpen, setIsDropDown] = useState({});
   const { auth } = useAuth();
   const params = useParams();
@@ -15,24 +16,25 @@ function Comments() {
     const fetchData = async () => {
       try {
         const result = await fetchComments(auth.token, params.articleId);
-        if (result.length > 0) {
-          setComments(result);
-        }
+        setComments(result);
+
       } catch (error) {
         console.log("Error from backend", error);
       }
     };
-    console.log(comments);
     fetchData();
+    console.log(comments);
     setLoading(false);
-  }, [params.articleId]);
+    setReload(false)
+  }, [params.articleId, reload]);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    console.log(userComment);
-    await postUserComment(auth.token, params.articleId, userComment);
     setUserComment("");
-    // setComments(...comments);
+    const result=await postUserComment(auth.token, params.articleId, userComment);
+    console.log(result);
+    setLoading(true);
+    setReload(true);
   }
 
   const toggleDropDown = (commentId) => {
@@ -60,6 +62,7 @@ function Comments() {
               <textarea
                 id="comment"
                 rows="6"
+                value={userComment}
                 className="px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 dark:bg-gray-800"
                 placeholder="Write a comment..."
                 onChange={(e) => setUserComment(e.target.value)}
@@ -154,7 +157,7 @@ function Comments() {
               </article>
             ))
           ) : (
-            <div>Be the First one to Comment</div>
+            <div className="text-white">Be the First one to Comment</div>
           )}
         </div>
       </section>

@@ -70,7 +70,7 @@ const fetchComments = async (userToken, articleId) => {
 
 const postUserComment = async (userToken, articleId, userComment) => {
   try {
-    console.log(userComment, userToken, articleId)
+    // console.log(userComment, userToken, articleId)
     const url = `${apiUrl}posts/${articleId}/comments`;
     const response = await fetch(url, {
       method: "POST",

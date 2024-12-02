@@ -44,11 +44,11 @@ function Articles() {
                   key={article.id}
                   className="max-w-4xl overflow-hidden bg-white rounded-lg shadow-md light:bg-white "
                 >
-                  <img
+                  {article.image_url &&<img
                     className="object-cover w-full h-64"
                     src={article.image_url}
                     alt="cover-image"
-                  />
+                  />}
                   <div className="px-6 py-2">
                     <span className="block float text-sm font-semibold text-gray-500">
                       Pubilshed:{" "}
@@ -61,7 +61,7 @@ function Articles() {
                     <div>
                       <Link
                         to={`${article.id}`}
-                        className="block text-5xl font-bold text-gray-800 transition-colors duration-300 transform text-black hover:text-gray-600 hover:underline"
+                        className="block text-5xl font-bold transition-colors duration-300 transform text-black hover:text-gray-600 hover:underline"
                         tabIndex="0"
                         role="link"
                       >
