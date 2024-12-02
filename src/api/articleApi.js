@@ -30,6 +30,7 @@ const fetchArticleWithId = async (userToken, articleId) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
+    // console.log(result);
     return result;
   } catch (error) {
     console.log("Error occured from backend: " + error);
@@ -78,12 +79,57 @@ const postUserComment = async (userToken, articleId, userComment) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${userToken}`,
       },
-      body: JSON.stringify({userComment:userComment}),
+      body: JSON.stringify({ userComment: userComment }),
     });
     const result = await response.json();
     return result;
   } catch (error) {
     console.error("Erorr occured from backend", error);
+  }
+};
+
+//2 requests for checking if the article opened is liked/bookmarked by the user
+// returns 2 bool values
+const UserLikedBookmarkPost = async (userToken, articleId) => {
+  try {
+    const urls = [
+      `${apiUrl}posts/${articleId}/likes`,
+      `${apiUrl}posts/${articleId}/bookmarks`,
+    ];
+    const fetchPromises = urls.map(async (url) => {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch from ${url}`);
+      }
+      return response.json();
+    });
+    const result = await Promise.allSettled(fetchPromises);
+    return {
+      liked: result[0].value.liked,
+      bookmarked: result[1].value.bookmarked,
+    };
+  } catch (error) {
+    console.error(`Unexpected error: ${error}`);
+  }
+};
+
+const handleLike = async (userToken, articleId) => {
+  const url = `${apiUrl}posts/${articleId}/likes`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
+    if (!response.ok) throw new Error(`Failed to fetch from ${url}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error occured from Backend ${error}`);
   }
 };
 
@@ -93,4 +139,6 @@ export {
   fetchMoreArticles,
   fetchComments,
   postUserComment,
+  UserLikedBookmarkPost,
+  handleLike,
 };

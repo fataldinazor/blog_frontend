@@ -1,9 +1,18 @@
 import { lazy, Suspense, useEffect, useState, useRef } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { fetchArticleWithId, fetchMoreArticles } from "../../api/articleApi";
+import {
+  fetchArticleWithId,
+  fetchMoreArticles,
+  UserLikedBookmarkPost,
+  handleLike,
+} from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
 import { truncateString } from "../../utiils/helper";
 import aheadForArticles from "../../assets/aheadForArticles.svg";
+import comment from "../../assets/comment.svg";
+import bookmark from "../../assets/bookmark.svg";
+import share from "../../assets/share.svg";
+import { BookmarkIcon, LikedIcon } from "../../assets/Icons";
 
 const Comments = lazy(() => import("./Comments"));
 
@@ -15,9 +24,9 @@ function MoreArticles() {
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetchMoreArticles(auth.token, params.articleId);
-      console.log(result);
+      // console.log(result);
       if (result.length > 6) randomizeArticles(result);
-      else if(result.length>0 && result.length <=6) setMoreArticles[result];
+      else if (result.length > 0 && result.length <= 6) setMoreArticles[result];
       else {
         console.log("No Articles available to show right now");
       }
@@ -39,7 +48,7 @@ function MoreArticles() {
   }
   return (
     <div id="more-articles-container">
-      <h1 className="text-3xl font-bold p-2">More Articles to Read →</h1>
+      <h1 className="text-3xl font-bold p-2">Suggested Reads →</h1>
       <div id="more-article-cards" className="flex flex-col gap-4">
         {moreArticles.length
           ? moreArticles.map((article) => (
@@ -82,6 +91,12 @@ function MoreArticles() {
                       <h3 className="font-bold uppercase text-gray-900">
                         {truncateString(article.title, 30)}
                       </h3>
+                      <p className="text-gray-600 text-xs">
+                        by{" "}
+                        <span className="font-semibold">
+                          {article.user.username}
+                        </span>
+                      </p>
                     </Link>
                     <Link
                       to={`/articles/${article.id}`}
@@ -173,8 +188,86 @@ function Article({ article, user }) {
   );
 }
 
+function PostInteraction({ counts }) {
+  console.log(counts);
+  const [isLiked, setIsLiked] = useState();
+  const [isBookmarked, setIsBookmarked] = useState();
+  const [likesCount, setLikesCount] = useState(0);
+  const [bookmarkCount, setBookmarkCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
+  const { auth } = useAuth();
+  const params = useParams();
+  useEffect(() => {
+    if (counts) {
+      setLikesCount(counts.likes);
+      setBookmarkCount(counts.bookmarks);
+      setCommentCount(counts.comments);
+    }
+  }, [counts]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await UserLikedBookmarkPost(auth.token, params.articleId);
+      setIsLiked(result.liked);
+      setIsBookmarked(result.bookmarked);
+    };
+    fetchData();
+    // console.log(likesCount, bookmarkCount, isLiked, isBookmarked, commentCount);
+  }, []);
+
+  async function handleLikeBtn() {
+    //need to work on this functionality
+    if (isLiked) {
+      setLikesCount((prev) => prev - 1);
+    } else {
+      setLikesCount((prev) => prev + 1);
+    }
+    setIsLiked((prev) => !prev);
+    try {
+      const result = await handleLike(auth.token, params.articleId);
+      console.log(result);
+    } catch (error) {
+      console.error(`Faied to perform action ${error}`);
+    }
+  }
+
+  return (
+    <div className="flex flex-col justify-center items-center gap-5">
+      <div id="like-article">
+        <button onClick={handleLikeBtn}>
+          {isLiked ? (
+            <LikedIcon fillColor="red" stroke="none" />
+          ) : (
+            <LikedIcon fillColor="#fffffh" stroke="#000000" />
+          )}
+        </button>
+        <p className="text-center">{likesCount}</p>
+      </div>
+      <div id="comment-article">
+        <button>
+          <img src={comment} alt="Comment" className="pl-0.5 cursor-pointer" />
+        </button>
+        <p className="text-center">{counts.comments}</p>
+      </div>
+      <div id="bookmark-article">
+        <button>
+          {isBookmarked ? (
+            <BookmarkIcon fillColor="#000000" />
+          ) : (
+            <BookmarkIcon fillColor="#EFF2F4" />
+          )}
+        </button>
+        <p className="text-center">{bookmarkCount}</p>
+      </div>
+      <div id="share-article">
+        <img src={share} alt="Share" />
+      </div>
+    </div>
+  );
+}
+
 function ArticleId() {
-  const [article, setArticle] = useState([]);
+  const [article, setArticle] = useState({});
   const [user, setUser] = useState({});
   const [showCommentsComponent, setShowCommentsComponent] = useState(false);
   const commentComponentRef = useRef();
@@ -182,13 +275,12 @@ function ArticleId() {
   // const location = useLocation();
   const params = useParams();
   useEffect(() => {
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
     const fetchData = async () => {
       try {
         const result = await fetchArticleWithId(auth.token, params.articleId);
         setArticle(result);
         setUser(result.user);
-        // console.log(article);
       } catch (error) {
         console.error("Failed to fetch articles", error);
       }
@@ -198,14 +290,14 @@ function ArticleId() {
   }, [params.articleId]);
 
   useEffect(() => {
-    const timeoutId=setTimeout(()=>{
+    const timeoutId = setTimeout(() => {
       const observer = new IntersectionObserver(
         (enteries) => {
-          console.log("Observer triggered", enteries);
+          // console.log("Observer triggered", enteries);
           if (enteries[0].isIntersecting) {
-            console.log("Comments are in viewport");
+            // console.log("Comments are in viewport");
             setShowCommentsComponent(true);
-            observer.disconnect()
+            observer.disconnect();
           }
         },
         { root: null, margin: "0px", threshold: 0.1 }
@@ -220,14 +312,16 @@ function ArticleId() {
     }, 3000);
 
     // clean if the component unmounts
-    return ()=> clearTimeout(timeoutId);
+    return () => clearTimeout(timeoutId);
   }, [commentComponentRef, params.articleId]);
 
   return (
     <div id="full-page" className="bg-gray-100">
       <div id="container" className="mx-20 outline-dotted">
         <div className="grid grid-cols-12">
-          <div id="left-side" className="col-span-1 outline-dotted"></div>
+          <div id="left-side" className="col-span-1 outline-dotted">
+            {article?._count && <PostInteraction counts={article._count} />}
+          </div>
           <div id="middle" className="col-span-8 flex flex-col outline-dotted">
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
