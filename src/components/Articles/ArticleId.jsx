@@ -5,14 +5,17 @@ import {
   fetchMoreArticles,
   UserLikedBookmarkPost,
   handleLike,
+  handleBookmark,
 } from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
 import { truncateString } from "../../utiils/helper";
 import aheadForArticles from "../../assets/aheadForArticles.svg";
-import comment from "../../assets/comment.svg";
-import bookmark from "../../assets/bookmark.svg";
-import share from "../../assets/share.svg";
-import { BookmarkIcon, LikedIcon } from "../../assets/Icons";
+import {
+  BookmarkIcon,
+  LikedIcon,
+  CommentIcon,
+  ShareIcon,
+} from "../../assets/Icons";
 
 const Comments = lazy(() => import("./Comments"));
 
@@ -189,10 +192,9 @@ function Article({ article, user }) {
 }
 
 function PostInteraction({ counts }) {
-  console.log(counts);
   const [isLiked, setIsLiked] = useState();
-  const [isBookmarked, setIsBookmarked] = useState();
   const [likesCount, setLikesCount] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState();
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
   const { auth } = useAuth();
@@ -213,54 +215,88 @@ function PostInteraction({ counts }) {
     };
     fetchData();
     // console.log(likesCount, bookmarkCount, isLiked, isBookmarked, commentCount);
-  }, []);
+  }, [params.articleId]);
 
   async function handleLikeBtn() {
-    //need to work on this functionality
-    if (isLiked) {
-      setLikesCount((prev) => prev - 1);
-    } else {
-      setLikesCount((prev) => prev + 1);
-    }
-    setIsLiked((prev) => !prev);
+    const previousState = isLiked;
+    setIsLiked(!isLiked);
+    setLikesCount((prevCount) => (isLiked ? prevCount - 1 : prevCount + 1));
+    //if req fails due to any reason roll back to previous state
+    const rollback = (prevState) => {
+      setIsLiked(prevState);
+      setLikesCount((prevCount) => (isLiked ? prevCount + 1 : prevCount - 1));
+    };
     try {
       const result = await handleLike(auth.token, params.articleId);
-      console.log(result);
+      if (!result) {
+        rollback(previousState);
+        // handle error here
+        // alert("Something went wrong. Couldn't like the Post")
+      }
     } catch (error) {
+      rollback(previousState);
       console.error(`Faied to perform action ${error}`);
     }
   }
 
+  async function handleBookmarkBtn() {
+    const previousState = isBookmarked;
+    setIsBookmarked(!isBookmarked);
+    setBookmarkCount((prevCount) =>
+      isBookmarked ? prevCount - 1 : prevCount + 1
+    );
+    //rollback function
+    const rollback = (prevState) => {
+      setIsBookmarked(prevState);
+      setBookmarkCount((prevCount) =>
+        isBookmarked ? prevCount + 1 : prevCount - 1
+      );
+    };
+    try {
+      const result = await handleBookmark(auth.token, params.articleId);
+      // throw new Error("some error");
+      if (!result) {
+        rollback(previousState);
+      }
+    } catch (error) {
+      rollback(previousState);
+      console.error(`Failed to bookmark this Article! ${error}`);
+    }
+  }
+
   return (
-    <div className="flex flex-col justify-center items-center gap-5">
-      <div id="like-article">
+    <div className="flex flex-col justify-center items-center gap-4 text-center text-gray-500 font-semibold text-sm sticky top-5">
+      <div id="like-article" className="flex flex-col items-center">
         <button onClick={handleLikeBtn}>
           {isLiked ? (
-            <LikedIcon fillColor="red" stroke="none" />
+            <LikedIcon fillColor="red" stroke="red" />
           ) : (
             <LikedIcon fillColor="#fffffh" stroke="#000000" />
           )}
         </button>
-        <p className="text-center">{likesCount}</p>
+        <p>{likesCount}</p>
       </div>
-      <div id="comment-article">
+
+      <div id="comment-article" className="flex flex-col items-center">
         <button>
-          <img src={comment} alt="Comment" className="pl-0.5 cursor-pointer" />
+          <CommentIcon />
         </button>
-        <p className="text-center">{counts.comments}</p>
+        <p>{commentCount}</p>
       </div>
-      <div id="bookmark-article">
-        <button>
+
+      <div id="bookmark-article" className="flex flex-col items-center">
+        <button onClick={handleBookmarkBtn}>
           {isBookmarked ? (
             <BookmarkIcon fillColor="#000000" />
           ) : (
             <BookmarkIcon fillColor="#EFF2F4" />
           )}
         </button>
-        <p className="text-center">{bookmarkCount}</p>
+        <p>{bookmarkCount}</p>
       </div>
+
       <div id="share-article">
-        <img src={share} alt="Share" />
+        <ShareIcon />
       </div>
     </div>
   );
@@ -311,17 +347,18 @@ function ArticleId() {
       };
     }, 3000);
 
-    // clean if the component unmounts
+    // clean up if the component unmounts
     return () => clearTimeout(timeoutId);
   }, [commentComponentRef, params.articleId]);
 
   return (
     <div id="full-page" className="bg-gray-100">
-      <div id="container" className="mx-20 outline-dotted">
+      <div id="container" className="mx-20 ">
         <div className="grid grid-cols-12">
-          <div id="left-side" className="col-span-1 outline-dotted">
+          <div id="left-side" className="col-span-1">
             {article?._count && <PostInteraction counts={article._count} />}
           </div>
+
           <div id="middle" className="col-span-8 flex flex-col outline-dotted">
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
@@ -332,6 +369,7 @@ function ArticleId() {
               )}
             </div>
           </div>
+
           <div id="right-side" className="col-span-3 outline-dotted">
             <MoreArticles />
           </div>

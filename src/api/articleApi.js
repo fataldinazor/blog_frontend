@@ -126,10 +126,24 @@ const handleLike = async (userToken, articleId) => {
         Authorization: `Bearer ${userToken}`,
       },
     });
-    if (!response.ok) throw new Error(`Failed to fetch from ${url}`);
+    if (!response.ok) throw new Error(`Failed to connect with backend`);
     return await response.json();
   } catch (error) {
     console.error(`Error occured from Backend ${error}`);
+  }
+};
+
+const handleBookmark = async (userToken, articleId) => {
+  const url = `${apiUrl}posts/${articleId}/bookmarks`;
+  const options = { method: "POST",headers: {Authorization: `Bearer ${userToken}`} };
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`Unable to connect with backend`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error occurred from backend! ${error}`);
   }
 };
 
@@ -141,4 +155,5 @@ export {
   postUserComment,
   UserLikedBookmarkPost,
   handleLike,
+  handleBookmark,
 };

@@ -8,7 +8,7 @@ function Header() {
   return (
     <div
       id="header"
-      className="flex items-center justify-between bg-gray-800 text-white py-4 px-6 shadow-lg"
+      className="flex items-center justify-between bg-black text-white py-4 px-6 shadow-lg"
     >
       {/* Logo Section */}
       <div id="logo" className="flex items-center">
