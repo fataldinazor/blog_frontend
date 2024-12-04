@@ -1,23 +1,19 @@
 // import React, {useState} from "react";
-import blogIcon from "../../assets/blogIcon.svg";
+import { BlogIcon } from "../../assets/Icons";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 function Header() {
-  const {auth, logout}=useAuth();
+  const { auth, logout } = useAuth();
   return (
     <div
       id="header"
-      className="flex items-center justify-between bg-black text-white py-4 px-6 shadow-lg"
+      className="flex items-center justify-between bg-black text-white py-4 px-6 shadow-lg "
     >
       {/* Logo Section */}
       <div id="logo" className="flex items-center">
-        <img
-          src={blogIcon}
-          alt="WebsiteIcon"
-          className="h-10 w-10 mr-3 rounded-full"
-        />
-        <h1 className="text-2xl font-bold">BlogSite</h1>
+        <BlogIcon height="30" with="30" color="white" />
+        <h1 className="hidden md:block text-2xl font-bold">BlogSite</h1>
       </div>
 
       {/* Navbar Section */}

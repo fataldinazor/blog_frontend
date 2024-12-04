@@ -45,7 +45,7 @@ function Comments() {
   };
 
   return (
-    <div className="outline-dotted outline-red-500">
+    <div className="px-10">
       <section className="bg-white py-8 lg:py-16">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -66,7 +66,7 @@ function Comments() {
             </div>
             <button
               type="submit"
-              className="mt-3 py-2 px-6 text-sm font-medium border text-white bg-black hover:bg-white hover:text-black hover:border focus:ring-4 focus:ring-blue-200"
+              className="mt-3 py-2 px-4 text-sm font-medium text-white bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-gray-500 focus:ring-4 focus:ring-blue-200 rounded-lg"
             >
               Post comment
             </button>

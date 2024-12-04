@@ -27,7 +27,6 @@ function MoreArticles() {
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetchMoreArticles(auth.token, params.articleId);
-      // console.log(result);
       if (result.length > 6) randomizeArticles(result);
       else if (result.length > 0 && result.length <= 6) setMoreArticles[result];
       else {
@@ -40,7 +39,7 @@ function MoreArticles() {
   function randomizeArticles(moreArticles) {
     let articleArr = [];
     let set = new Set();
-    for (let i = 0; i < 6; i++) {
+    while(articleArr.length<5){
       const randomNumber = Math.floor(Math.random() * moreArticles.length);
       if (!set.has(randomNumber)) {
         articleArr.push(moreArticles[randomNumber]);
@@ -50,14 +49,17 @@ function MoreArticles() {
     setMoreArticles(articleArr);
   }
   return (
-    <div id="more-articles-container">
-      <h1 className="text-3xl font-bold p-2">Suggested Reads →</h1>
+    <div
+      id="more-articles-container"
+      className="rounded-lg border px-2 border-gray-400 inline-block pb-3"
+    >
+      <h1 className="text-2xl font-bold p-2">Suggested Reads →</h1>
       <div id="more-article-cards" className="flex flex-col gap-4">
         {moreArticles.length
           ? moreArticles.map((article) => (
               <article
                 key={article.id}
-                className="flex bg-white transition hover:shadow-xl py-2 pr-2"
+                className="flex bg-white transition hover:shadow-xl py-2 pr-2 rounded-lg"
               >
                 <div className="rotate-180 p-2 [writing-mode:_vertical-lr]">
                   <time
@@ -89,10 +91,10 @@ function MoreArticles() {
                       />
                     </div>
                   )}
-                  <div className="border-s border-gray-900/10 p-4 sm:border-l-transparent sm:p-2 flex justify-between">
+                  <div className="border-s border-gray-900/10 py-4 sm:border-l-transparent sm:py-2 flex justify-between">
                     <Link to={`/articles/${article.id}`}>
                       <h3 className="font-bold uppercase text-gray-900">
-                        {truncateString(article.title, 30)}
+                        {truncateString(article.title, 35)}
                       </h3>
                       <p className="text-gray-600 text-xs">
                         by{" "}
@@ -128,64 +130,66 @@ function Article({ article, user }) {
         {article.image_url && (
           <header className="mx-auto max-w-screen-xl flex flex-col text-left items-start">
             <img
-              className="w-full object-cover h-80"
+              className="w-full object-cover h-80 rounded-tl-lg rounded-tr-md"
               src={article.image_url}
               alt="Featured Image"
             />
           </header>
         )}
-        <div className="mx-auto max-w-screen-md text-lg tracking-wide text-gray-700">
+        <div className="px-10">
+          <div className="mx-auto max-w-screen-md text-lg tracking-wide text-gray-700">
           <p className="text-gray-500 text-base">
-            Published{" "}
-            {new Date(article.updatedAt).toLocaleDateString("en-US", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}{" "}
-            at{" "}
-            {new Date(article.updatedAt).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "numeric",
-            })}
-          </p>
-          <h1 className="mt-1 text-3xl font-bold text-gray-900 sm:text-5xl">
-            {article.title}
-          </h1>
-          <div
-            className="mt-4 flex flex-wrap justify-center gap-2"
-            aria-label="Tags"
-          ></div>
-          <div className="flex items-center">
-            <img
-              className="w-10 h-10 object-cover rounded-full shadow-sm"
-              src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
-              alt="Avatar"
-            />
+              Published{" "}
+              {new Date(article.updatedAt).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}{" "}
+              at{" "}
+              {new Date(article.updatedAt).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "numeric",
+              })}
+            </p>
+            <h1 className="mt-1 text-3xl leading-relaxed font-bold text-gray-900 sm:text-5xl">
+              {article.title}
+            </h1>
+            <div
+              className="mt-4 flex flex-wrap justify-center gap-2"
+              aria-label="Tags"
+            ></div>
+            <div className="flex items-center">
+              <img
+                className="w-10 h-10 object-cover rounded-full shadow-sm"
+                src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                alt="Avatar"
+              />
 
-            <div className="ml-3 flex items-center space-x-2">
-              <div>
-                <p className="text-xs leading-none font-normal pb-0.5 text-gray-500">
-                  Published by
-                </p>
-                <a
-                  href="#"
-                  className="text-lg leading-none font-semibold text-gray-800 hover:underline"
-                  tabIndex="0"
-                  role="link"
-                >
-                  {user.username}
-                </a>
+              <div className="ml-3 flex items-center space-x-2">
+                <div>
+                  <p className="text-xs leading-none font-normal pb-0.5 text-gray-500">
+                    Published by
+                  </p>
+                  <a
+                    href="#"
+                    className="text-lg leading-none font-semibold text-gray-800 hover:underline"
+                    tabIndex="0"
+                    role="link"
+                  >
+                    {user.username}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div
-          className="mx-auto max-w-screen-md my-4 py-2 font-serif text-justify text-lg tracking-wide text-gray-700"
-          dangerouslySetInnerHTML={{
-            __html: article.content,
-          }}
-        ></div>
+          <div
+            className="mx-auto max-w-screen-md my-4 py-2 font-serif text-justify text-lg tracking-wide text-gray-700"
+            dangerouslySetInnerHTML={{
+              __html: article.content,
+            }}
+          ></div>
+        </div>
       </article>
     </main>
   );
@@ -329,9 +333,7 @@ function ArticleId() {
     const timeoutId = setTimeout(() => {
       const observer = new IntersectionObserver(
         (enteries) => {
-          // console.log("Observer triggered", enteries);
           if (enteries[0].isIntersecting) {
-            // console.log("Comments are in viewport");
             setShowCommentsComponent(true);
             observer.disconnect();
           }
@@ -353,13 +355,13 @@ function ArticleId() {
 
   return (
     <div id="full-page" className="bg-gray-100">
-      <div id="container" className="mx-20 ">
-        <div className="grid grid-cols-12">
-          <div id="left-side" className="col-span-1">
+      <div id="container" className="mx-20 py-8 ">
+        <div className="grid grid-cols-12 gap-x-5">
+          <div id="left-side" className="col-span-1 py-20 pl-12 ">
             {article?._count && <PostInteraction counts={article._count} />}
           </div>
 
-          <div id="middle" className="col-span-8 flex flex-col outline-dotted">
+          <div id="middle" className="col-span-8 flex flex-col bg-white rounded-lg">
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
               {showCommentsComponent && (
@@ -370,7 +372,8 @@ function ArticleId() {
             </div>
           </div>
 
-          <div id="right-side" className="col-span-3 outline-dotted">
+ 
+          <div id="right-side" className="col-span-3">
             <MoreArticles />
           </div>
         </div>

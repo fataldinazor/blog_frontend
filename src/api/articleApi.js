@@ -20,6 +20,23 @@ const fetchAllPublishedArticles = async (userToken) => {
   }
 };
 
+const fetchTopAuthors=async(userToken)=>{
+  const url=`${apiUrl}posts/authors/top`;
+  try {
+    const response=await fetch(url,{
+      headers:{
+        Authorization:`Bearer ${userToken}`,
+      },
+    });
+    if(!response.ok){
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json()
+  } catch (error) {
+    console.error(`Could fetch details ${error}`)
+  }
+}
+
 const fetchArticleWithId = async (userToken, articleId) => {
   try {
     const url = `${apiUrl}posts/${articleId}`;
@@ -156,4 +173,5 @@ export {
   UserLikedBookmarkPost,
   handleLike,
   handleBookmark,
+  fetchTopAuthors
 };
