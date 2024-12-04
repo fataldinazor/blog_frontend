@@ -9,7 +9,7 @@ import {
 } from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
 import { truncateString } from "../../utiils/helper";
-import aheadForArticles from "../../assets/aheadForArticles.svg";
+import {BlogIcon} from "../../assets/Icons";
 import {
   BookmarkIcon,
   LikedIcon,
@@ -51,10 +51,13 @@ function MoreArticles() {
   return (
     <div
       id="more-articles-container"
-      className="rounded-lg border px-2 border-gray-400 inline-block pb-3"
+      className="rounded-lg px-2 pb-3"
     >
-      <h1 className="text-2xl font-bold p-2">Suggested Reads →</h1>
-      <div id="more-article-cards" className="flex flex-col gap-4">
+      <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2">Suggested Reads →</h1>
+      <div
+        id="more-article-cards"
+        className="grid grid-cols-2 md:flex md:flex-col gap-4"
+      >
         {moreArticles.length
           ? moreArticles.map((article) => (
               <article
@@ -91,9 +94,9 @@ function MoreArticles() {
                       />
                     </div>
                   )}
-                  <div className="border-s border-gray-900/10 py-4 sm:border-l-transparent sm:py-2 flex justify-between">
+                  <div className=" py-4 sm:border-l-transparent sm:py-2 flex justify-between">
                     <Link to={`/articles/${article.id}`}>
-                      <h3 className="font-bold uppercase text-gray-900">
+                      <h3 className="text-sm font-semibold md:font-bold uppercase text-gray-900">
                         {truncateString(article.title, 35)}
                       </h3>
                       <p className="text-gray-600 text-xs">
@@ -105,12 +108,13 @@ function MoreArticles() {
                     </Link>
                     <Link
                       to={`/articles/${article.id}`}
-                      className="block  bg-black px-4 py-2 text-center text-xs font-bold uppercase text-gray-900 transition hover:bg-yellow-400 flex "
+                      className="flex items-center  px-4 py-2 text-center text-xs font-bold uppercase text-gray-900"
                     >
-                      <img
-                        className=""
-                        src={aheadForArticles}
-                        alt="Go to article"
+                      <BlogIcon
+                        className="my-auto"
+                        height="20"
+                        width="20"
+                        color="black"
                       />
                     </Link>
                   </div>
@@ -130,7 +134,7 @@ function Article({ article, user }) {
         {article.image_url && (
           <header className="mx-auto max-w-screen-xl flex flex-col text-left items-start">
             <img
-              className="w-full object-cover h-80 rounded-tl-lg rounded-tr-md"
+              className="w-full object-cover h-60 md:h-80 rounded-tl-lg rounded-tr-md"
               src={article.image_url}
               alt="Featured Image"
             />
@@ -138,7 +142,7 @@ function Article({ article, user }) {
         )}
         <div className="px-10">
           <div className="mx-auto max-w-screen-md text-lg tracking-wide text-gray-700">
-          <p className="text-gray-500 text-base">
+            <p className="text-sm text-gray-500 md:text-base">
               Published{" "}
               {new Date(article.updatedAt).toLocaleDateString("en-US", {
                 day: "2-digit",
@@ -151,7 +155,7 @@ function Article({ article, user }) {
                 minute: "numeric",
               })}
             </p>
-            <h1 className="mt-1 text-3xl leading-relaxed font-bold text-gray-900 sm:text-5xl">
+            <h1 className="mt-1 text-2xl leading-tight md:text-3xl md:leading-snug lg:text-4xl font-bold text-gray-900">
               {article.title}
             </h1>
             <div
@@ -159,32 +163,34 @@ function Article({ article, user }) {
               aria-label="Tags"
             ></div>
             <div className="flex items-center">
+              {/* Avatar */}
               <img
-                className="w-10 h-10 object-cover rounded-full shadow-sm"
+                className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
                 src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
                 alt="Avatar"
               />
 
+              {/* User Info */}
               <div className="ml-3 flex items-center space-x-2">
                 <div>
-                  <p className="text-xs leading-none font-normal pb-0.5 text-gray-500">
+                  <p className="text-xs lg:text-sm leading-none font-normal lg:pb-0.5 text-gray-500">
                     Published by
                   </p>
-                  <a
-                    href="#"
-                    className="text-lg leading-none font-semibold text-gray-800 hover:underline"
+                  <Link
+                    to="#"
+                    className="text-sm md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
                     tabIndex="0"
                     role="link"
                   >
                     {user.username}
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
 
           <div
-            className="mx-auto max-w-screen-md my-4 py-2 font-serif text-justify text-lg tracking-wide text-gray-700"
+            className="mx-auto max-w-screen-md my-4 py-2 text-sm md:text-base font-serif text-justify md:text-lg tracking-wide text-gray-900"
             dangerouslySetInnerHTML={{
               __html: article.content,
             }}
@@ -269,8 +275,8 @@ function PostInteraction({ counts }) {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center gap-4 text-center text-gray-500 font-semibold text-sm sticky top-5">
-      <div id="like-article" className="flex flex-col items-center">
+    <div className="flex justify-evenly items-center py-2 lg:flex-col lg:justify-center lg:items-center lg:gap-5 text-center text-gray-500 font-semibold text-sm lg:sticky top-5">
+      <div id="like-article" className="flex gap-2 lg:flex-col items-center">
         <button onClick={handleLikeBtn}>
           {isLiked ? (
             <LikedIcon fillColor="red" stroke="red" />
@@ -281,14 +287,17 @@ function PostInteraction({ counts }) {
         <p>{likesCount}</p>
       </div>
 
-      <div id="comment-article" className="flex flex-col items-center">
+      <div id="comment-article" className="flex gap-2 lg:flex-col items-center">
         <button>
           <CommentIcon />
         </button>
         <p>{commentCount}</p>
       </div>
 
-      <div id="bookmark-article" className="flex flex-col items-center">
+      <div
+        id="bookmark-article"
+        className="flex gap-2 lg:flex-col items-center"
+      >
         <button onClick={handleBookmarkBtn}>
           {isBookmarked ? (
             <BookmarkIcon fillColor="#000000" />
@@ -300,7 +309,7 @@ function PostInteraction({ counts }) {
       </div>
 
       <div id="share-article">
-        <ShareIcon />
+        <ShareIcon className="pr-3"/>
       </div>
     </div>
   );
@@ -315,7 +324,7 @@ function ArticleId() {
   // const location = useLocation();
   const params = useParams();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, 0);
     const fetchData = async () => {
       try {
         const result = await fetchArticleWithId(auth.token, params.articleId);
@@ -354,14 +363,24 @@ function ArticleId() {
   }, [commentComponentRef, params.articleId]);
 
   return (
-    <div id="full-page" className="bg-gray-100">
-      <div id="container" className="mx-20 py-8 ">
-        <div className="grid grid-cols-12 gap-x-5">
-          <div id="left-side" className="col-span-1 py-20 pl-12 ">
+    <div id="full-page" className="bg-gray-100 min-w-96">
+      {/* <div className="bg-white fixed bottom-0 w-full">
+        {article?._count && <PostInteraction counts={article._count} />}
+      </div> */}
+
+      <div id="container" className="lg:mx-20 lg:py-8">
+        <div className="flex flex-col md:grid md:grid-cols-4 md:gap-x-2 lg:grid-cols-12 lg:gap-x-5">
+          <div
+            id="left-side"
+            className="bg-white z-10 fixed bottom-0 w-full lg:static lg:bg-inherit lg:col-span-1 lg:py-20 lg:pl-10 p"
+          >
             {article?._count && <PostInteraction counts={article._count} />}
           </div>
 
-          <div id="middle" className="col-span-8 flex flex-col bg-white rounded-lg">
+          <div
+            id="middle"
+            className="md:col-span-3 lg:col-span-8 flex flex-col bg-white rounded-lg"
+          >
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
               {showCommentsComponent && (
@@ -372,8 +391,7 @@ function ArticleId() {
             </div>
           </div>
 
- 
-          <div id="right-side" className="col-span-3">
+          <div id="right-side" className="w-full min-w-52 mb-20 md:col-span-1 lg:col-span-3">
             <MoreArticles />
           </div>
         </div>

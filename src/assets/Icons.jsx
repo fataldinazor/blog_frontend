@@ -22,7 +22,7 @@ function LikedIcon({ fillColor, stroke }) {
     <svg
       width="35px"
       height="35px"
-      viewBox="0 -3 15 19"
+      viewBox="0 -1 15 19"
       fill="none"
       stroke={stroke}
       strokeWidth={1.5}

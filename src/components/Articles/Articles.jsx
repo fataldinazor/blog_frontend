@@ -125,7 +125,7 @@ function ArticleList({ articles, articlesPerPage }) {
                     <img
                       src={ahead}
                       role="link"
-                      className="pr-2 w-8  cursor-pointer"
+                      className="pr-2 w-8 cursor-pointer"
                     />
                   </Link>
                 </div>

@@ -46,7 +46,7 @@ function Comments() {
 
   return (
     <div className="px-10">
-      <section className="bg-white py-8 lg:py-16">
+      <section className="bg-white py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-bold text-gray-900">{`Discussions (${comments.length})`}</h2>
