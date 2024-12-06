@@ -23,6 +23,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthProvider from "./context/AuthContext";
 import CreateArticles from "./components/Articles/CreateArticles";
 import ArticlesLayout from "./components/Articles/ArticlesLayout";
+import AuthorLayout from "./components/Author/AuthorLayout"
+import AuthorPage from "./components/Author/AuthorPage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -40,6 +42,9 @@ const router = createBrowserRouter(
         <Route path="author" element={<AuthorRegister />} />
       </Route>
       <Route path="login" element={<Login />} />
+      <Route path="author" element={<AuthorLayout/>}>
+        <Route path=":authorId" element={<AuthorPage/>}/>
+      </Route>
       <Route
         element={<ProtectedRoute allowedRoles={["ADMIN", "AUTHOR", "USER"]} />}
       >

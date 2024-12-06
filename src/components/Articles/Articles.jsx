@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation, Link } from "react-router-dom";
-import { truncateString } from "../../utiils/helper";
+import { formatDate, truncateString } from "../../utiils/helper";
 import ahead from "../../assets/ahead.svg";
 import {
   fetchAllPublishedArticles,
@@ -50,11 +50,11 @@ function ArticleList({ articles, articlesPerPage }) {
   }, [currPage]);
 
   return (
-    <div className="min-w-96 flex flex-col m-4">
+    <div className="min-w-80 flex flex-col m-4">
       <h1 className="text-3xl md:text-4xl lg:text-5xl py-2 md:py-3 lg:py-4 mb-2 font-bold ">
         Discover Articles
       </h1>
-      {articlesOnPage.length > 0 ? (
+      {articlesOnPage.length ? (
         <div id="article-card-container" className="flex flex-col gap-5">
           {articlesOnPage.map((article) => (
             <div
@@ -72,11 +72,7 @@ function ArticleList({ articles, articlesPerPage }) {
               <div className="px-6 py-2">
                 <span className="block float text-sm lg:text-base font-semibold text-gray-500">
                   Pubilshed:{" "}
-                  {new Date(article.createdAt).toLocaleDateString("en-US", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatDate(article.updatedAt)}
                 </span>
                 <div>
                   <Link
@@ -228,7 +224,7 @@ function Articles() {
     <div id="full-page" className="bg-slate-100">
       <div
         id="container"
-        className="lg:mx-40 grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-4 "
+        className="lg:mx-auto grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-4 "
       >
         <div id="left-container" className="lg:col-span-3">
           {articles.length && <ArticleList articles={articles} articlesPerPage={10} />}

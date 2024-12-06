@@ -78,8 +78,8 @@ function Login() {
 
   return (
     <div
-      id="user-register"
-      className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md border"
+      id="login"
+      className="max-w-md mx-auto my-auto mt-10 p-6 bg-white outline-dashed rounded-lg shadow-md border"
     >
       <h1 className="text-2xl font-bold mb-6 text-center">
         Login into your Account
@@ -90,7 +90,6 @@ function Login() {
         autoComplete="off"
         className="space-y-2"
       >
-        <p>{auth.token}</p>
         <div>
           <label
             htmlFor="username"
@@ -105,7 +104,7 @@ function Login() {
             placeholder="Enter your username"
             value={formValues.username}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
           />
           <p className="text-sm text-red-600 mt-1">{formErrors.username}</p>
         </div>
@@ -124,14 +123,14 @@ function Login() {
             placeholder="Enter your password"
             value={formValues.password}
             onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
           />
           <p className="text-sm text-red-600 mt-1">{formErrors.password}</p>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+          className="w-full bg-black text-white border py-2 px-4 rounded-lg hover:border-black hover:bg-white hover:text-black hover:font-semibold transition duration-200"
         >
           Submit
         </button>

@@ -51,7 +51,7 @@ function MoreArticles() {
   return (
     <div
       id="more-articles-container"
-      className="rounded-lg px-2 pb-3"
+      className="rounded-lg pb-3"
     >
       <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2">Suggested Reads →</h1>
       <div
@@ -140,7 +140,7 @@ function Article({ article, user }) {
             />
           </header>
         )}
-        <div className="px-10">
+        <div className="px-5 md:px-10">
           <div className="mx-auto max-w-screen-md text-lg tracking-wide text-gray-700">
             <p className="text-sm text-gray-500 md:text-base">
               Published{" "}
@@ -364,22 +364,18 @@ function ArticleId() {
 
   return (
     <div id="full-page" className="bg-gray-100 min-w-96">
-      {/* <div className="bg-white fixed bottom-0 w-full">
-        {article?._count && <PostInteraction counts={article._count} />}
-      </div> */}
-
       <div id="container" className="lg:mx-20 lg:py-8">
-        <div className="flex flex-col md:grid md:grid-cols-4 md:gap-x-2 lg:grid-cols-12 lg:gap-x-5">
+        <div className="flex flex-col md:grid md:grid-cols-4 lg:grid-cols-12 lg:gap-x-5">
           <div
             id="left-side"
-            className="bg-white z-10 fixed bottom-0 w-full lg:static lg:bg-inherit lg:col-span-1 lg:py-20 lg:pl-10 p"
+            className="bg-white z-10 mx-1 fixed bottom-0 w-full lg:static lg:bg-inherit lg:col-span-1 lg:py-20 lg:pl-10 p"
           >
             {article?._count && <PostInteraction counts={article._count} />}
           </div>
 
           <div
             id="middle"
-            className="md:col-span-3 lg:col-span-8 flex flex-col bg-white rounded-lg"
+            className="m-2 md:col-span-3 lg:col-span-8 flex flex-col bg-white rounded-lg"
           >
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
@@ -391,7 +387,7 @@ function ArticleId() {
             </div>
           </div>
 
-          <div id="right-side" className="w-full min-w-52 mb-20 md:col-span-1 lg:col-span-3">
+          <div id="right-side" className="w-full px-2 min-w-48 mb-20 md:col-span-1 lg:col-span-3">
             <MoreArticles />
           </div>
         </div>
