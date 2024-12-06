@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useLocation, Link } from "react-router-dom";
-import { formatDate, truncateString } from "../../utiils/helper";
-import ahead from "../../assets/ahead.svg";
+import { formatDate, truncateString } from "../../utils/helper";
+// import ahead from "../../assets/ahead.svg";
+import { BlogIcon } from "../../assets/Icons";
 import {
   fetchAllPublishedArticles,
   fetchTopAuthors,
@@ -26,12 +27,25 @@ function PaginateBtns({ currPage, setCurrPage, totalPages }) {
   }
   return (
     <div className="flex justify-evenly gap-20 py-5 mx-5 font-semibold text-3xl ">
-      {currPage>1 &&<button className="pt-1 pb-2 px-3 md:px-5 bg-black text-white rounded-lg text-center" onClick={handlePrevBtn}>←</button>}
-      {currPage<totalPages && <button className="pt-1 pb-2 px-3 md:px-5 bg-black text-white rounded-lg" onClick={handleNextBtn}>→</button>}
+      {currPage > 1 && (
+        <button
+          className="pt-1 pb-2 px-3 md:px-5 bg-black text-white rounded-lg text-center"
+          onClick={handlePrevBtn}
+        >
+          ←
+        </button>
+      )}
+      {currPage < totalPages && (
+        <button
+          className="pt-1 pb-2 px-3 md:px-5 bg-black text-white rounded-lg"
+          onClick={handleNextBtn}
+        >
+          →
+        </button>
+      )}
     </div>
   );
 }
-
 
 function ArticleList({ articles, articlesPerPage }) {
   //pagination
@@ -70,23 +84,22 @@ function ArticleList({ articles, articlesPerPage }) {
                 />
               )}
               <div className="px-6 py-2">
-                <span className="block float text-sm lg:text-base font-semibold text-gray-500">
-                  Pubilshed:{" "}
-                  {formatDate(article.updatedAt)}
+                <span className="block float text-xs lg:text-base font-semibold text-gray-500">
+                  Pubilshed: {formatDate(article.updatedAt)}
                 </span>
                 <div>
                   <Link
                     to={`${article.id}`}
-                    className="block text-2xl md:text-3xl lg:text-4xl font-bold transition-colors duration-300 transform text-black hover:text-gray-600 hover:underline"
+                    className="block text-xl leading-tight md:text-3xl md:leading-snug lg:text-4xl font-bold transition-colors duration-300 transform text-black hover:text-gray-600 hover:underline"
                     tabIndex="0"
                     role="link"
                   >
-                    {article.title}
+                    {truncateString(article.title, 125)}
                   </Link>
                   <p
-                    className="mt-2  text-sm text-gray-600 dark:text-gray-400"
+                    className="mt-2 text-xs md:text-sm text-gray-600 dark:text-gray-400"
                     dangerouslySetInnerHTML={{
-                      __html: truncateString(article.content, 175),
+                      __html: truncateString(article.content, 150),
                     }}
                   ></p>
                 </div>
@@ -96,7 +109,10 @@ function ArticleList({ articles, articlesPerPage }) {
                     {/* Avatar */}
                     <img
                       className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
-                      src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                      src={
+                        article.user.profile.image_url ||
+                        "https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                      }
                       alt="Avatar"
                     />
 
@@ -106,23 +122,19 @@ function ArticleList({ articles, articlesPerPage }) {
                         <p className="text-xs lg:text-sm leading-none font-normal pb-0.5 text-gray-500">
                           Published by
                         </p>
-                        <a
-                          href="#"
-                          className="text-md md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
+                        <Link
+                          to={`/author/${article.user.id}`}
+                          className="text-base md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
                           tabIndex="0"
                           role="link"
                         >
                           {article.user.username}
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </div>
                   <Link to={`/articles/${article.id}`}>
-                    <img
-                      src={ahead}
-                      role="link"
-                      className="pr-2 w-8 cursor-pointer"
-                    />
+                    <BlogIcon height="30" width="30" color="black" />
                   </Link>
                 </div>
               </div>
@@ -137,6 +149,7 @@ function ArticleList({ articles, articlesPerPage }) {
         setCurrPage={setCurrPage}
         totalPages={totalPages}
       />
+      <p></p>
     </div>
   );
 }
@@ -148,7 +161,7 @@ function TopAuthorList() {
     const fetchData = async () => {
       try {
         const result = await fetchTopAuthors(auth.token);
-        console.log(result);
+        // console.log(result);
         if (result) {
           setAuthors(result);
         }
@@ -227,7 +240,9 @@ function Articles() {
         className="lg:mx-auto grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-4 "
       >
         <div id="left-container" className="lg:col-span-3">
-          {articles.length && <ArticleList articles={articles} articlesPerPage={10} />}
+          {articles.length && (
+            <ArticleList articles={articles} articlesPerPage={10} />
+          )}
         </div>
         <div id="right-container" className="my-2 lg:my-24">
           <TopAuthorList />

@@ -25,7 +25,7 @@ function formatDate(date) {
   const currDate = new Date();
   if (new Date(date).getFullYear() === currDate.getFullYear()) {
     return new Date(date).toLocaleDateString("en-US", {
-      weekday:"long",
+      weekday: "long",
       day: "numeric",
       month: "long",
     });
@@ -38,4 +38,15 @@ function formatDate(date) {
   }
 }
 
-export { storingUserToLS, truncateString, formatDate };
+const userMenu = [
+  { name: "Homepage", url: "/" },
+  { name: "Articles", url: "/articles" },
+];
+const authorMenu = [
+  { name: "Profile", url: "/author/" },
+  { name: "Create New", url: "/articles/new" },
+  { name: "HomePage", url: "/" },
+  { name: "Articles", url: "/articles" },
+];
+
+export { storingUserToLS, truncateString, formatDate, userMenu, authorMenu };

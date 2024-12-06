@@ -8,38 +8,49 @@ import {
   handleBookmark,
 } from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
-import { truncateString } from "../../utiils/helper";
-import {BlogIcon} from "../../assets/Icons";
+import { truncateString } from "../../utils/helper";
+import { BlogIcon } from "../../assets/Icons";
 import {
   BookmarkIcon,
   LikedIcon,
   CommentIcon,
   ShareIcon,
 } from "../../assets/Icons";
+import { Triangle } from "react-loader-spinner";
 
 const Comments = lazy(() => import("./Comments"));
 
 function MoreArticles() {
   const [moreArticles, setMoreArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { auth } = useAuth();
   const params = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await fetchMoreArticles(auth.token, params.articleId);
-      if (result.length > 6) randomizeArticles(result);
-      else if (result.length > 0 && result.length <= 6) setMoreArticles[result];
-      else {
-        console.log("No Articles available to show right now");
+      try {
+        const result = await fetchMoreArticles(auth.token, params.articleId);
+        if (result.length > 6) randomizeArticles(result);
+        else if (result.length > 0 && result.length <= 6)
+          setMoreArticles[result];
+        else {
+          console.log("No Articles available to show right now");
+        }
+      } catch (error) {
+        console.log("error occured" + error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchData();
+    setTimeout(() => {
+      fetchData();
+    }, 5000);
   }, [auth.token, params.articleId]);
 
   function randomizeArticles(moreArticles) {
     let articleArr = [];
     let set = new Set();
-    while(articleArr.length<5){
+    while (articleArr.length < 6) {
       const randomNumber = Math.floor(Math.random() * moreArticles.length);
       if (!set.has(randomNumber)) {
         articleArr.push(moreArticles[randomNumber]);
@@ -48,25 +59,37 @@ function MoreArticles() {
     }
     setMoreArticles(articleArr);
   }
+
   return (
-    <div
-      id="more-articles-container"
-      className="rounded-lg pb-3"
-    >
-      <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2">Suggested Reads →</h1>
-      <div
-        id="more-article-cards"
-        className="grid grid-cols-2 md:flex md:flex-col gap-4"
-      >
-        {moreArticles.length
-          ? moreArticles.map((article) => (
+    <div id="more-articles-container" className="rounded-lg pb-3">
+      <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2">
+        Suggested Reads →
+      </h1>
+
+      {isLoading ? (
+        <div className="h-96 flex justify-center items-center">
+          <Triangle
+            visible={true}
+            height="40"
+            width="40"
+            color="#000000"
+            ariaLabel="triangle-loading"
+          />
+        </div>
+      ) : (
+        <div
+          id="more-article-cards"
+          className="grid grid-cols-2 lg:flex lg:flex-col gap-4"
+        >
+          {moreArticles.length > 0 ? (
+            moreArticles.map((article) => (
               <article
                 key={article.id}
                 className="flex bg-white transition hover:shadow-xl py-2 pr-2 rounded-lg"
               >
                 <div className="rotate-180 p-2 [writing-mode:_vertical-lr]">
                   <time
-                    dateTime={article.updatedAt.toLocaleDateString}
+                    dateTime={new Date(article.updatedAt).toISOString()}
                     className="flex items-center justify-between gap-4 text-xs font-bold uppercase text-gray-900"
                   >
                     <span>
@@ -86,29 +109,32 @@ function MoreArticles() {
 
                 <div className="flex flex-1 flex-col justify-between">
                   {article.image_url && (
-                    <div className="">
+                    <div>
                       <img
                         alt="cover-image"
                         src={article.image_url}
-                        className=" w-full object-cover h-40"
+                        className="w-full object-cover h-40"
                       />
                     </div>
                   )}
-                  <div className=" py-4 sm:border-l-transparent sm:py-2 flex justify-between">
+                  <div className="py-4 sm:border-l-transparent sm:py-2 flex justify-between">
                     <Link to={`/articles/${article.id}`}>
                       <h3 className="text-sm font-semibold md:font-bold uppercase text-gray-900">
                         {truncateString(article.title, 35)}
                       </h3>
                       <p className="text-gray-600 text-xs">
                         by{" "}
-                        <span className="font-semibold">
+                        <Link
+                          to={`/profile/${article.user.id}`}
+                          className="font-semibold"
+                        >
                           {article.user.username}
-                        </span>
+                        </Link>
                       </p>
                     </Link>
                     <Link
                       to={`/articles/${article.id}`}
-                      className="flex items-center  px-4 py-2 text-center text-xs font-bold uppercase text-gray-900"
+                      className="flex items-center px-4 py-2 text-center text-xs font-bold uppercase text-gray-900"
                     >
                       <BlogIcon
                         className="my-auto"
@@ -121,8 +147,11 @@ function MoreArticles() {
                 </div>
               </article>
             ))
-          : "No Articles to show here now"}
-      </div>
+          ) : (
+            <p>No Articles to show here now</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -177,7 +206,7 @@ function Article({ article, user }) {
                     Published by
                   </p>
                   <Link
-                    to="#"
+                    to={`/author/${user.id}`}
                     className="text-sm md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
                     tabIndex="0"
                     role="link"
@@ -309,7 +338,7 @@ function PostInteraction({ counts }) {
       </div>
 
       <div id="share-article">
-        <ShareIcon className="pr-3"/>
+        <ShareIcon className="pr-3" />
       </div>
     </div>
   );
@@ -321,6 +350,7 @@ function ArticleId() {
   const [showCommentsComponent, setShowCommentsComponent] = useState(false);
   const commentComponentRef = useRef();
   const { auth } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
   // const location = useLocation();
   const params = useParams();
   useEffect(() => {
@@ -332,10 +362,13 @@ function ArticleId() {
         setUser(result.user);
       } catch (error) {
         console.error("Failed to fetch articles", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    fetchData();
+    setTimeout(() => {
+      fetchData();
+    }, 2000);
   }, [params.articleId]);
 
   useEffect(() => {
@@ -362,10 +395,24 @@ function ArticleId() {
     return () => clearTimeout(timeoutId);
   }, [commentComponentRef, params.articleId]);
 
+  if (isLoading) {
+    return (
+      <div className="h-96 flex justify-center items-center">
+        <Triangle
+          visible={true}
+          height="40"
+          width="40"
+          color="#000000"
+          ariaLabel="triangle-loading"
+        />
+      </div>
+    );
+  }
+
   return (
     <div id="full-page" className="bg-gray-100 min-w-96">
-      <div id="container" className="lg:mx-20 lg:py-8">
-        <div className="flex flex-col md:grid md:grid-cols-4 lg:grid-cols-12 lg:gap-x-5">
+      <div id="container" className="lg:mx-10 lg:py-8">
+        <div className="flex flex-col md:grid  lg:grid-cols-12 lg:gap-x-5">
           <div
             id="left-side"
             className="bg-white z-10 mx-1 fixed bottom-0 w-full lg:static lg:bg-inherit lg:col-span-1 lg:py-20 lg:pl-10 p"
@@ -375,19 +422,32 @@ function ArticleId() {
 
           <div
             id="middle"
-            className="m-2 md:col-span-3 lg:col-span-8 flex flex-col bg-white rounded-lg"
+            className="m-2 lg:col-span-8 flex flex-col bg-white rounded-lg"
           >
             <Article article={article} user={user}></Article>
             <div ref={commentComponentRef}>
               {showCommentsComponent && (
-                <Suspense fallback={<div>Comments are Loading...</div>}>
+                <Suspense
+                  fallback={
+                    <Triangle
+                      visible={true}
+                      height="40"
+                      width="40"
+                      color="#000000"
+                      ariaLabel="triangle-loading"
+                    />
+                  }
+                >
                   <Comments />
                 </Suspense>
               )}
             </div>
           </div>
 
-          <div id="right-side" className="w-full px-2 min-w-48 mb-20 md:col-span-1 lg:col-span-3">
+          <div
+            id="right-side"
+            className="w-full px-2 min-w-48 mb-20 lg:col-span-3"
+          >
             <MoreArticles />
           </div>
         </div>

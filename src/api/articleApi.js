@@ -13,6 +13,7 @@ const fetchAllPublishedArticles = async (userToken) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
+    // console.log(result)
     return result;
   } catch (error) {
     console.log("Error Occured from backend: ", error);

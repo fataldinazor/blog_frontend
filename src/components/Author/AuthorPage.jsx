@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { fetchArticles } from "../../api/authorApi";
-import { truncateString, formatDate } from "@/utiils/helper";
+import { truncateString, formatDate } from "@/utils/helper";
 import { BlogIcon } from "../../assets/Icons";
+import { Triangle } from "react-loader-spinner";
 
 function AuthorArticles({ tab }) {
   const { auth } = useAuth();
   const params = useParams();
   const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [cachedArticles, setCachedArticles] = useState({
     published: null,
     unpublished: null,
@@ -35,11 +37,29 @@ function AuthorArticles({ tab }) {
           }
         } catch (error) {
           console.log(`Error: ${error}`);
+        } finally {
+          setIsLoading(false);
         }
       };
-      getArticles();
+      setTimeout(() => {
+        getArticles();
+      }, 2000);
     }
   }, [tab, params.authorId, auth.token]);
+
+  if (isLoading) {
+    return (
+      <div className="h-96 flex justify-center items-center">
+        <Triangle
+          visible={true}
+          height="40"
+          width="40"
+          color="#000000"
+          ariaLabel="triangle-loading"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="">
@@ -47,15 +67,20 @@ function AuthorArticles({ tab }) {
         <div className="bg-white mt-2">
           <div className="min-w-full">
             <h1 className="text-2xl font-bold text-black my-6">
-              {tab==="published"?`My Contributions`:`Unpublished Content`}
+              {tab === "published" ? `My Contributions` : `Unpublished Content`}
             </h1>
             <div className="flex flex-col p-2">
               {articles.map((article) => (
-                <div key={article.id} className=" bg-white rounded-lg max-w-5xl">
+                <div
+                  key={article.id}
+                  className=" bg-white rounded-lg max-w-5xl"
+                >
                   <div className="flex font-semibold">
-                    <h2 className="text-lg  text-black">{article.title}</h2>
+                    <h2 className="text-lg  text-black">
+                      {truncateString(article.title, 125)}
+                    </h2>
                     <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-1 h-5">
-                      Public
+                      {article.published ? "Public" : "Private"}
                     </div>
                   </div>
                   <p className="text-sm text-gray-700">{article.description}</p>
@@ -134,11 +159,10 @@ function AuthorNav({ tab }) {
   );
 }
 
-
 function AuthorPage() {
   const [searchParams, setSearchParams] = useSearchParams("?tabs=published");
   const tab = searchParams.get("tabs");
-  console.log(tab);
+  // console.log(tab);
 
   return (
     <div className="flex flex-col w-full min-w-80 mb-6 break-words rounded-2xl">

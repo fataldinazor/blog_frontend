@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { storingUserToLS } from "../../utiils/helper";
+import { storingUserToLS } from "../../utils/helper";
 
 function Login() {
   const [formValues, setFormValues] = useState({ username: "", password: "" });

@@ -3,28 +3,48 @@ import { Outlet, useParams } from "react-router-dom";
 import { EmailIcon, LocationIcon } from "../../assets/Icons";
 import { fetchAuthorDetails } from "../../api/authorApi";
 import { useAuth } from "../../context/AuthContext";
+import { Triangle } from "react-loader-spinner";
 
 function AuthorInfo() {
-  const [author, setAuthor] = useState({});
+  const [author, setAuthor] = useState();
   const { auth } = useAuth();
   const params = useParams();
+  const [isLoading, setIsLoading]=useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await fetchAuthorDetails(auth.token, params.authorId);
         if (result) {
-          setAuthor(result);
+            setAuthor(result);
         }
       } catch (error) {
         console.log("Error" + error);
+      } finally{
+        setIsLoading(false);
       }
     };
-    fetchData();
+    setTimeout(() => {
+      fetchData();
+    }, 4000);
     console.log(author);
   }, [params.authorId, auth.token]);
 
-  return Object.keys(author).length ? (
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-48">
+        <Triangle
+          visible={true}
+          height="40"
+          width="40"
+          color="#000000"
+          ariaLabel="triangle-loading"
+        />
+      </div>
+    );
+  }
+
+  return author ? (
     <div
       id="author-info"
       className="max-w-3xl min-w-96 mx-auto px-2 py-4 grid grid-cols-4"
@@ -53,12 +73,12 @@ function AuthorInfo() {
           @{author.username}
         </div>
         <div id="author-bio" className="text-xs py-1 md:text-sm  ">
-          {author.profile.bio}
+          {author.profile?.bio}
         </div>
 
         <div className="flex flex-wrap justify-between pt-2">
           <div className="flex flex-wrap items-center text-xs md:text-sm">
-            <div className="mr-3 mb-2 inline-flex items-center justify-center h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1  font-medium leading-normal">
+            <div className="mr-3 mb-2 inline-flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1  font-medium leading-normal">
               {author._count.posts} Contributions
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
@@ -72,7 +92,7 @@ function AuthorInfo() {
       </div>
     </div>
   ) : (
-    <h2>Failed to fetch the profile</h2>
+    <h2 className="h-28 flex justify-center items-center">Failed to fetch the profile</h2>
   );
 }
 

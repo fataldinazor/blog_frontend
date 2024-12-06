@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { fetchComments, postUserComment } from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
+import { formatDate } from "../../utils/helper";
 
 function Comments() {
   const [comments, setComments] = useState({});
   const [userComment, setUserComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [reload, setReload]= useState();
+  const [reload, setReload] = useState();
   const [isDropDownOpen, setIsDropDown] = useState({});
   const { auth } = useAuth();
   const params = useParams();
@@ -17,21 +18,23 @@ function Comments() {
       try {
         const result = await fetchComments(auth.token, params.articleId);
         setComments(result);
-
       } catch (error) {
         console.log("Error from backend", error);
       }
     };
     fetchData();
-    // console.log(comments);
     setLoading(false);
-    setReload(false)
+    setReload(false);
   }, [params.articleId, reload]);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setUserComment("");
-    const result=await postUserComment(auth.token, params.articleId, userComment);
+    const result = await postUserComment(
+      auth.token,
+      params.articleId,
+      userComment
+    );
     console.log(result);
     setLoading(true);
     setReload(true);
@@ -45,7 +48,7 @@ function Comments() {
   };
 
   return (
-    <div className="px-10">
+    <div className="px-10 lg:mb-16">
       <section className="bg-white py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -90,18 +93,11 @@ function Comments() {
                         {comment.user.username}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(comment.updatedAt).toLocaleDateString(
-                          "en-US",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          }
-                        )}
+                        {formatDate(comment.updatedAt)}
                       </p>
                     </div>
                   </div>
-                  <div>
+                  {/* <div>
                     <button
                       className="inline-flex items-center p-2 text-sm text-gray-500 bg-gray-200 rounded-full hover:bg-gray-300"
                       onClick={() => toggleDropDown(comment.id)}
@@ -115,13 +111,15 @@ function Comments() {
                         <path d="M5 10a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
                       </svg>
                     </button>
-                  </div>
+                  </div> */}
                 </footer>
                 <p className="text-gray-700">{comment.text}</p>
               </article>
             ))
           ) : (
-            <div className="text-gray-700 text-xl font-semibold">Be the one to start a Discussion</div>
+            <div className="text-gray-700 text-xl font-semibold">
+              Be the one to start a Discussion
+            </div>
           )}
         </div>
       </section>
