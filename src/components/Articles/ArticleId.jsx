@@ -79,7 +79,7 @@ function MoreArticles() {
       ) : (
         <div
           id="more-article-cards"
-          className="grid grid-cols-2 lg:flex lg:flex-col gap-4"
+          className="grid grid-cols-2 md:mx-5 lg:mx-0 lg:flex lg:flex-col gap-4"
         >
           {moreArticles.length > 0 ? (
             moreArticles.map((article) => (
@@ -125,7 +125,7 @@ function MoreArticles() {
                       <p className="text-gray-600 text-xs">
                         by{" "}
                         <Link
-                          to={`/profile/${article.user.id}`}
+                          to={`/author/${article.user.id}`}
                           className="font-semibold"
                         >
                           {article.user.username}

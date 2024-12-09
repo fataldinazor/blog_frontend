@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { fetchArticles } from "../../api/authorApi";
@@ -21,6 +21,7 @@ function AuthorArticles({ tab }) {
     if (cachedArticles[articleType]) {
       setArticles(cachedArticles[articleType]);
     } else {
+      setIsLoading(true);
       const getArticles = async () => {
         try {
           const result = await fetchArticles(
@@ -113,7 +114,7 @@ function AuthorArticles({ tab }) {
           </div>
         </div>
       ) : (
-        <p className="font-bold text-3xl md:text-4xl">No Content to show!</p>
+        <div className="font-semibold flex min-h-80 text-gray-500 justify-center items-center text-xl md:text-2xl">No Contributions yet!</div>
       )}
     </div>
   );
@@ -142,7 +143,8 @@ function AuthorNav({ tab }) {
             className={getTabClass("published")}
             to="?tabs=published"
           >
-            Published Articles
+            Published 
+            <span className="hidden md:inline-block ml-1">Articles</span>
           </Link>
         </li>
         <li>
@@ -151,7 +153,7 @@ function AuthorNav({ tab }) {
             className={getTabClass("unpublished")}
             to="?tabs=unpublished"
           >
-            Unpublished Articles
+            Drafts
           </Link>
         </li>
       </ul>

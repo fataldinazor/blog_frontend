@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -11,6 +11,7 @@ function AuthProvider({ children }) {
     expiry: getExpiry(),
   });
   let location = useLocation();
+  const navigate = useNavigate();
 
   //checking for the token validity at each page change and
   // logging out the user if toekn expired
@@ -52,6 +53,7 @@ function AuthProvider({ children }) {
   function logout() {
     localStorage.clear();
     setAuth({ isAuthenticated: false, token: "", userInfo: "" });
+    navigate("/login");
   }
 
   return (

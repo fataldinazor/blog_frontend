@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BlogIcon } from "../../assets/Icons";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -7,12 +7,27 @@ import { userMenu, authorMenu } from "../../utils/helper";
 function DropDown() {
   const [isOpen, setIsOpen] = useState(false);
   const { auth, logout } = useAuth();
+  const dropdownRef = useRef();
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    //cleanup function
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
   return (
-    <div>
+    <div ref={dropdownRef}>
       <button
         id="dropdownDefaultButton"
         data-dropdown-toggle="dropdown"
-        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="text-white bg-black border border-white  hover:bg-white hover:text-black focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
         type="button"
         onClick={() => setIsOpen((prevState) => !prevState)}
       >
@@ -46,7 +61,7 @@ function DropDown() {
         >
           {auth.userInfo.role === "AUTHOR"
             ? authorMenu.map((menu, index) => (
-                <li key={index}>
+                <li key={index} onClick={()=>setIsOpen(false)}>
                   <Link
                     to={
                       menu.name === "Profile"
@@ -60,7 +75,7 @@ function DropDown() {
                 </li>
               ))
             : userMenu.map((menu, index) => (
-                <li key={index}>
+                <li key={index} onClick={()=> setIsOpen(false)}>
                   <Link
                     to={menu.url}
                     className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -70,13 +85,14 @@ function DropDown() {
                 </li>
               ))}
 
-          <li>
-            <button
+          <li onClick={()=>setIsOpen(false)}>
+            <hr />
+            <div 
               onClick={logout}
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+              className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
             >
               Logout
-            </button>
+            </div>
           </li>
         </ul>
       </div>

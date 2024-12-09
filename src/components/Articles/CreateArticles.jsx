@@ -15,7 +15,9 @@ function CreateArticles() {
   });
   const editorRef = useRef(null);
   const [formErrors, setFormErrors] = useState({});
+  //conatains the file 
   const [image, setImage] = useState(null);
+  //contains the url of the file for showing to ther user
   const [imagePreview, setImagePreview] = useState("");
   const [imageErrors, setImageErrors] = useState("");
   const [isSubmit, setIsSubmit] = useState(false);
@@ -122,7 +124,7 @@ function CreateArticles() {
       setImage(null);
       return false;
     } else if (file.size > 2 * 1024 * 1024) {
-      setImageErrors("The file size is over 3MB, Reduce it");
+      setImageErrors("The file size is over 2MB, Reduce it");
       setImage(null);
       return false;
     } else {
@@ -134,7 +136,6 @@ function CreateArticles() {
 
   //handling images input
   async function handleImageSelection(event) {
-    // console.log(event.target.files[0]);
     const file = event.target.files[0];
     if (file) {
       const validationResult = imageValidation(file);
