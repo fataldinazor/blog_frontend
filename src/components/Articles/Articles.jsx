@@ -110,7 +110,7 @@ function ArticleList({ articles, articlesPerPage }) {
                     <img
                       className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
                       src={
-                        article.user.profile.image_url ||
+                        article.user.profile.avatar_url ||
                         "https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
                       }
                       alt="Avatar"
@@ -172,7 +172,7 @@ function TopAuthorList() {
     fetchData();
   });
   return (
-    <div className="w-full max-w-md p-4 rounded-lg  sm:p-8">
+    <div className="w-full mx-auto max-w-lg p-4 rounded-lg  sm:p-8">
       <div className="flex items-center justify-between mb-4">
         <h5 className="text-xl font-bold leading-none text-black">
           Top Contributers
@@ -237,7 +237,7 @@ function Articles() {
     <div id="full-page" className="bg-slate-100">
       <div
         id="container"
-        className="lg:mx-auto grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-4 "
+        className="mx-auto max-w-screen-xl grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-4 "
       >
         <div id="left-container" className="lg:col-span-3">
           {articles.length && (

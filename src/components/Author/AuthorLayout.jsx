@@ -1,12 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, useParams } from "react-router-dom";
-import {
-  EmailIcon,
-  LocationIcon,
-  TrashIcon,
-  ModifyIcon,
-  CrossIcon,
-} from "../../assets/Icons";
+import { TrashIcon, ModifyIcon, CrossIcon } from "../../assets/Icons";
 import {
   fetchAuthorDetails,
   uploadToCloudinary,
@@ -35,14 +29,15 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
 
-  // useEffect(() => {
-  //   if (image.imagePreview) {
-  //     const prevImagePreview = image.imagePreview;
-  //     //unmounting cleanup function when image Preview is changed
-  //     return () => URL.revokeObjectURL(prevImagePreview);
-  //   }
-  // }, [image.imagePreview]);
+  useEffect(() => {
+    if (image.imagePreview) {
+      const prevImagePreview = image.imagePreview;
+      //unmounting cleanup function when image Preview is changed
+      return () => URL.revokeObjectURL(prevImagePreview);
+    }
+  }, [image.imagePreview]);
 
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
@@ -51,37 +46,57 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
     }
   }, [formErrors, isSubmit]);
 
+  function handleCloseForm() {
+    if (isFormDirty) {
+      const confirmExit = window.confirm(
+        "You have unsaved changes. Are you sure you want to leave this page without saving"
+      );
+      if (!confirmExit) {
+        return;
+      }
+    }
+    setIsFormDirty(false);
+    setShowEdit(false);
+  }
+
   async function handleAuthorInfo(image) {
     setIsSubmit(false);
     let uploadedAvatarUrl = null;
     let updatedFormValues = { ...formValues };
-    if (
-      image.imagePreview &&
-      image.imagePreview !== author.profile?.avatar_url
-    ) {
-      if (image.file) {
-        console.log(image.imagePreview);
-        try {
-          uploadedAvatarUrl = await uploadToCloudinary(image.file);
-          updatedFormValues.avatar_url = uploadedAvatarUrl;
-          setFormValues(updatedFormValues);
-        } catch (error) {
-          console.error("Error uploading to Cloudinary", error);
-        }
+    
+    if (image.file) {
+      try {
+        uploadedAvatarUrl = await uploadToCloudinary(image.file);
+        updatedFormValues.avatar_url = uploadedAvatarUrl;
+        updatedFormValues = {
+          ...updatedFormValues,
+          old_avatar_url: author?.profile?.avatar_url || null,
+        };
+        setFormValues(updatedFormValues);
+      } catch (error) {
+        console.error("Error uploading to Cloudinary", error);
       }
-    } else if(!image.imagePreview) {
-      updatedFormValues.avatar_url = null;
+    } else {
+      if (author.profile?.avatar_url !== null && image.imagePreview === null) {
+        updatedFormValues.avatar_url = null;
+        updatedFormValues = {
+          ...updatedFormValues,
+          old_avatar_url: author?.profile?.avatar_url,
+        };
+      } else if (
+        author.profile?.author_url === null &&
+        image.imagePreview === null
+      ) {
+        updatedFormValues = {
+          ...updatedFormValue,
+          avatar_url: null,
+          old_avatar_url: null,
+        };
+      }
     }
 
     try {
-      await updateAuthorPage(
-        {
-          ...updatedFormValues,
-          old_avatar_url: author.profile?.avatar_url || null,
-        },
-        auth.token,
-        params.authorId
-      );
+      await updateAuthorPage(updatedFormValues, auth.token, params.authorId);
       console.log("update sucessfull");
     } catch (error) {
       console.log(`Error updating author info`, error);
@@ -92,9 +107,20 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
     setAuthor(null);
   }
 
+  //handling changes when formValues enetered
+  function handleChange(event) {
+    const { name, value } = event.target;
+    setFormValues((prevState) => ({ ...prevState, [name]: value }));
+    setIsFormDirty(true);
+  }
+
   //handle form submit -> doing further validations and check
   function handleFormSubmit(event) {
     event.preventDefault();
+    if (!isFormDirty) {
+      setShowEdit(false);
+      return;
+    }
     const { sanitizedValues, errors } = validateFormValues(formValues);
     setFormValues(sanitizedValues);
     setFormErrors(errors);
@@ -126,7 +152,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
 
   // handling selecting image
   function handleImageSelection(event) {
-    console.log("Handle Selection in invoked");
+    setIsFormDirty(true);
     const file = event.target.files[0];
     const validationResult = imageValidation(file);
     if (!validationResult) {
@@ -140,30 +166,53 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
   //handling image validation once image is selected
   function imageValidation(file) {
     const acceptedFileTypes = ["image/jpg", "image/png", "image/jpeg"];
+    const defaultImagePreview = author.profile?.avatar_url || null;
+    // if (!acceptedFileTypes.includes(file.type)) {
+    //   setImageErrors("The file size should be of .jpg, .jpeg or .png format");
+    //   setImage({
+    //     file: null,
+    //     imagePreview: author.profile?.avatar_url || null,
+    //   });
+    //   return false;
+    // } else if (file.size > 2 * 1024 * 1024) {
+    //   setImageErrors("File size was over 2MB, Couldn't upload it!");
+    //   setImage({
+    //     file: null,
+    //     imagePreview: author.profile?.avatar_url || null,
+    //   });
+    //   return false;
+    // } else {
+    //   setImageErrors("");
+    //   return true;
+    // }
+    const setValidationError = (errorMessage) => {
+      setImageErrors(errorMessage);
+      setImage({
+        file: null,
+        imagePreview: defaultImagePreview,
+      });
+      return false;
+    };
+
     if (!acceptedFileTypes.includes(file.type)) {
-      setImageErrors("The file size should be of .jpg, .jpeg or .png format");
-      setImage({
-        file: null,
-        imagePreview: author.profile?.avatar_url || null,
-      });
-      return false;
-    } else if (file.size > 2 * 1024 * 1024) {
-      setImageErrors("File size was over 2MB, Couldn't upload it!");
-      setImage({
-        file: null,
-        imagePreview: author.profile?.avatar_url || null,
-      });
-      return false;
-    } else {
-      setImageErrors("");
-      return true;
+      return setValidationError(
+        "The file must be in .jpg, .jpeg, or .png format"
+      );
     }
+
+    if (file.size > 2 * 1024 * 1024) {
+      return setValidationError("File size exceeds 2MB, unable to upload!");
+    }
+
+    setImageErrors("");
+    return true;
   }
 
   // handling the removal of avatar image
   function handleRemoveImage() {
     imageInputRef.current.value = null;
     setImage({ file: null, imagePreview: null });
+    setIsFormDirty(true);
   }
 
   // handle changing the avatar
@@ -176,11 +225,12 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
     }
   }
 
-  //handling changes when formValues enetered
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setFormValues((prevState) => ({ ...prevState, [name]: value }));
-  }
+  // //handling changes when formValues enetered
+  // function handleChange(event) {
+  //   const { name, value } = event.target;
+  //   setFormValues((prevState) => ({ ...prevState, [name]: value }));
+  //   setIsFormDirty(true);
+  // }
 
   {
     if (showEdit) {
@@ -190,11 +240,6 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
           <dialog
             id="my_modal_1"
             className={`z-20 h-auto min-w-80 max-w-screen-md p-4 rounded-lg mx-auto block`}
-            // onClick={(e) => {
-            //   if (e.target.tagName === "DIALOG") {
-            //     setShowEdit(false);
-            //   };
-            // }}
           >
             <div className="modal-box">
               {isLoading && (
@@ -212,7 +257,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
               )}
               <div className="flex justify-between">
                 <h3 className="font-bold text-lg">Edit Profile</h3>
-                <button className="btn" onClick={() => setShowEdit(false)}>
+                <button className="btn" onClick={handleCloseForm}>
                   <CrossIcon height="25" width="25" />
                 </button>
               </div>
@@ -392,7 +437,7 @@ function AuthorInfo() {
           setShowEdit={setShowEdit}
         />
       )}
-      <div className="flex items-center col-span-1">
+      <div className="flex items-start md:items-center col-span-1">
         <img
           src={
             author.profile?.avatar_url ||
@@ -402,7 +447,7 @@ function AuthorInfo() {
           className="rounded-2xl max-h-40"
         />
       </div>
-      <div className="col-span-3 flex flex-col px-2">
+      <div className="col-span-3 flex flex-col px-2 ml-2 lg:ml-3">
         <div className="flex justify-between">
           <div
             id="author-name"
@@ -427,13 +472,13 @@ function AuthorInfo() {
         >
           @{author.username}
         </div>
-        <div id="author-bio" className="text-xs py-1 md:text-sm  ">
+        <div id="author-bio" className="text-xs py-1 md:text-sm px-1">
           {author.profile?.bio}
         </div>
 
         <div className="flex flex-wrap justify-between pt-2">
           <div className="flex flex-wrap items-center text-xs md:text-sm">
-            <div className="mr-3 mb-2 inline-flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1  font-medium leading-normal">
+            <div className="mr-3 mb-2 inline-flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
               {author._count.posts} Contributions
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">

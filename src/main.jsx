@@ -25,6 +25,7 @@ import CreateArticles from "./components/Articles/CreateArticles";
 import ArticlesLayout from "./components/Articles/ArticlesLayout";
 import AuthorLayout from "./components/Author/AuthorLayout"
 import AuthorPage from "./components/Author/AuthorPage";
+import UpdateArticles from "./components/Articles/UpdateArticles";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -55,6 +56,7 @@ const router = createBrowserRouter(
             element={<ProtectedRoute allowedRoles={["ADMIN", "AUTHOR"]} />}
           >
             <Route path="new" element={<CreateArticles />} />
+            <Route path=":articleId/update" element={<UpdateArticles/>}/>
           </Route>
         </Route>
       </Route>

@@ -1,5 +1,24 @@
 import config from "../config";
-const { apiUrl } = config;
+const { apiUrl, presetName,cloudName } = config;
+
+const uploadToCloudinary=async(image)=>{
+    const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    try {
+      const formData = new FormData();
+      formData.append("file", image);
+      formData.append("upload_preset", presetName);
+      formData.append("tags", "cover-image");
+      const response = await fetch(CLOUDINARY_URL, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      return result.secure_url;
+    } catch (error) {
+      console.error("Error occured while uploading to cloudinary", error);
+      return null;
+    }
+}
 
 const fetchAllPublishedArticles = async (userToken) => {
   try {
@@ -39,8 +58,8 @@ const fetchTopAuthors=async(userToken)=>{
 }
 
 const fetchArticleWithId = async (userToken, articleId) => {
+  const url = `${apiUrl}posts/${articleId}`;
   try {
-    const url = `${apiUrl}posts/${articleId}`;
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${userToken}` },
     });
@@ -54,6 +73,27 @@ const fetchArticleWithId = async (userToken, articleId) => {
     console.log("Error occured from backend: " + error);
   }
 };
+
+const updateArticleWithId=async(userToken, articleId, formValues)=>{
+  const url=`${apiUrl}posts/${articleId}`
+  console.log(userToken, articleId, formValues)
+  try{
+    const response = await fetch(url, {
+      method:"PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body:JSON.stringify(formValues)
+    });
+    if(!response.ok){
+      throw new Error(`HTTP error!, status, ${response.status}`);
+    }
+    return await response.json();
+  }catch(error){
+    console.log("Error Occured from backend" + error);
+  }
+}
 
 const fetchMoreArticles = async (userToken, articleId) => {
   try {
@@ -166,8 +206,10 @@ const handleBookmark = async (userToken, articleId) => {
 };
 
 export {
+  uploadToCloudinary,
   fetchAllPublishedArticles,
   fetchArticleWithId,
+  updateArticleWithId,
   fetchMoreArticles,
   fetchComments,
   postUserComment,

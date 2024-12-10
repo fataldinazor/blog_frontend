@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import config from "../../config";
 import {TrashIcon} from "../../assets/Icons"
+import { uploadToCloudinary } from "../../api/articleApi";
 
 function CreateArticles() {
   const { auth } = useAuth();
@@ -47,24 +48,24 @@ function CreateArticles() {
   }
 
   // uploading image to Cloudinary and generating a link to store in imageUrl
-  async function uploadToCloudinary(image) {
-    const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    try {
-      const formData = new FormData();
-      formData.append("file", image);
-      formData.append("upload_preset", presetName);
-      formData.append("tags", "cover-image");
-      const response = await fetch(CLOUDINARY_URL, {
-        method: "POST",
-        body: formData,
-      });
-      const result = await response.json();
-      return result.secure_url;
-    } catch (error) {
-      console.error("Error occured while uploading to cloudinary", error);
-      return null;
-    }
-  }
+  // async function uploadToCloudinary(image) {
+  //   const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", image);
+  //     formData.append("upload_preset", presetName);
+  //     formData.append("tags", "cover-image");
+  //     const response = await fetch(CLOUDINARY_URL, {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+  //     const result = await response.json();
+  //     return result.secure_url;
+  //   } catch (error) {
+  //     console.error("Error occured while uploading to cloudinary", error);
+  //     return null;
+  //   }
+  // }
 
   // sending values to backend
   async function sendValtoBackend(formValues) {
@@ -174,7 +175,7 @@ function CreateArticles() {
               name="image"
               accept=".jpg, .png, .jpeg"
               onChange={handleImageSelection}
-              className="block w-full text-sm text-white-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-300 file:text-gray-700 hover:file:bg-gray-400"
+              className="w-full text-sm text-white-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-300 file:text-gray-700 hover:file:bg-gray-400"
             />
             {imageErrors && (
               <p className="mt-2 text-sm text-gray-500">{imageErrors}</p>
@@ -191,7 +192,7 @@ function CreateArticles() {
               onClick={handleRemoveClick}
               className="ml-4 text-sm font-medium text-gray-700 hover:text-gray-900"
             >
-              <TrashIcon />
+              <TrashIcon height={20} width={20} />
             </button>
           </div>
         )}
@@ -217,7 +218,7 @@ function CreateArticles() {
         <Editor
           apiKey={tinymceKey}
           onInit={(evt, editor) => (editorRef.current = editor)}
-          initialValue="<p>This is the initial content of the editor.</p>"
+          initialValue="<p>Write your content here!</p>"
           init={{
             height: 300,
             menubar: false,
