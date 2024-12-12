@@ -1,24 +1,24 @@
 import config from "../config";
-const { apiUrl, presetName,cloudName } = config;
+const { apiUrl, presetName, cloudName } = config;
 
-const uploadToCloudinary=async(image)=>{
-    const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    try {
-      const formData = new FormData();
-      formData.append("file", image);
-      formData.append("upload_preset", presetName);
-      formData.append("tags", "cover-image");
-      const response = await fetch(CLOUDINARY_URL, {
-        method: "POST",
-        body: formData,
-      });
-      const result = await response.json();
-      return result.secure_url;
-    } catch (error) {
-      console.error("Error occured while uploading to cloudinary", error);
-      return null;
-    }
-}
+const uploadToCloudinary = async (image) => {
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+  try {
+    const formData = new FormData();
+    formData.append("file", image);
+    formData.append("upload_preset", presetName);
+    formData.append("tags", "cover-image");
+    const response = await fetch(CLOUDINARY_URL, {
+      method: "POST",
+      body: formData,
+    });
+    const result = await response.json();
+    return result.secure_url;
+  } catch (error) {
+    console.error("Error occured while uploading to cloudinary", error);
+    return null;
+  }
+};
 
 const fetchAllPublishedArticles = async (userToken) => {
   try {
@@ -40,22 +40,22 @@ const fetchAllPublishedArticles = async (userToken) => {
   }
 };
 
-const fetchTopAuthors=async(userToken)=>{
-  const url=`${apiUrl}posts/authors/top`;
+const fetchTopAuthors = async (userToken) => {
+  const url = `${apiUrl}posts/authors/top`;
   try {
-    const response=await fetch(url,{
-      headers:{
-        Authorization:`Bearer ${userToken}`,
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
       },
     });
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json()
+    return await response.json();
   } catch (error) {
-    console.error(`Could fetch details ${error}`)
+    console.error(`Could fetch details ${error}`);
   }
-}
+};
 
 const fetchArticleWithId = async (userToken, articleId) => {
   const url = `${apiUrl}posts/${articleId}`;
@@ -74,26 +74,26 @@ const fetchArticleWithId = async (userToken, articleId) => {
   }
 };
 
-const updateArticleWithId=async(userToken, articleId, formValues)=>{
-  const url=`${apiUrl}posts/${articleId}`
-  console.log(userToken, articleId, formValues)
-  try{
+const updateArticleWithId = async (userToken, articleId, formValues) => {
+  const url = `${apiUrl}posts/${articleId}`;
+  console.log(userToken, articleId, formValues);
+  try {
     const response = await fetch(url, {
-      method:"PUT",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${userToken}`,
       },
-      body:JSON.stringify(formValues)
+      body: JSON.stringify(formValues),
     });
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(`HTTP error!, status, ${response.status}`);
     }
     return await response.json();
-  }catch(error){
+  } catch (error) {
     console.log("Error Occured from backend" + error);
   }
-}
+};
 
 const fetchMoreArticles = async (userToken, articleId) => {
   try {
@@ -193,11 +193,31 @@ const handleLike = async (userToken, articleId) => {
 
 const handleBookmark = async (userToken, articleId) => {
   const url = `${apiUrl}posts/${articleId}/bookmarks`;
-  const options = { method: "POST",headers: {Authorization: `Bearer ${userToken}`} };
+  const options = {
+    method: "POST",
+    headers: { Authorization: `Bearer ${userToken}` },
+  };
   try {
     const response = await fetch(url, options);
     if (!response.ok) {
       throw new Error(`Unable to connect with backend`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error occurred from backend! ${error}`);
+  }
+};
+
+const deletePostWithId = async (userToken, articleId) => {
+  console.log(userToken, articleId);
+  const url = `${apiUrl}posts/${articleId}`;
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to Delete the post`);
     }
     return await response.json();
   } catch (error) {
@@ -216,5 +236,6 @@ export {
   UserLikedBookmarkPost,
   handleLike,
   handleBookmark,
-  fetchTopAuthors
+  fetchTopAuthors,
+  deletePostWithId,
 };

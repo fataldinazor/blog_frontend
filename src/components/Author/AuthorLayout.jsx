@@ -14,14 +14,14 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
 
   const [image, setImage] = useState({
     file: null,
-    imagePreview: author.profile?.avatar_url || null,
+    imagePreview: author?.profile?.avatar_url || null,
   });
   const [imageErrors, setImageErrors] = useState("");
   const [formValues, setFormValues] = useState({
     fname: author.fname || "",
     lname: author.lname || "",
-    bio: author.profile.bio || "",
-    avatar_url: author.profile.avatar_url || null,
+    bio: author?.profile?.bio || "",
+    avatar_url: author?.profile?.avatar_url || null,
   });
 
   const { auth } = useAuth();
@@ -77,14 +77,14 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
         console.error("Error uploading to Cloudinary", error);
       }
     } else {
-      if (author.profile?.avatar_url !== null && image.imagePreview === null) {
+      if (author?.profile?.avatar_url !== null && image.imagePreview === null) {
         updatedFormValues.avatar_url = null;
         updatedFormValues = {
           ...updatedFormValues,
           old_avatar_url: author?.profile?.avatar_url,
         };
       } else if (
-        author.profile?.author_url === null &&
+        author?.profile?.author_url === null &&
         image.imagePreview === null
       ) {
         updatedFormValues = {
@@ -166,25 +166,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
   //handling image validation once image is selected
   function imageValidation(file) {
     const acceptedFileTypes = ["image/jpg", "image/png", "image/jpeg"];
-    const defaultImagePreview = author.profile?.avatar_url || null;
-    // if (!acceptedFileTypes.includes(file.type)) {
-    //   setImageErrors("The file size should be of .jpg, .jpeg or .png format");
-    //   setImage({
-    //     file: null,
-    //     imagePreview: author.profile?.avatar_url || null,
-    //   });
-    //   return false;
-    // } else if (file.size > 2 * 1024 * 1024) {
-    //   setImageErrors("File size was over 2MB, Couldn't upload it!");
-    //   setImage({
-    //     file: null,
-    //     imagePreview: author.profile?.avatar_url || null,
-    //   });
-    //   return false;
-    // } else {
-    //   setImageErrors("");
-    //   return true;
-    // }
+    const defaultImagePreview = author?.profile?.avatar_url || null;
     const setValidationError = (errorMessage) => {
       setImageErrors(errorMessage);
       setImage({
@@ -217,7 +199,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
 
   // handle changing the avatar
   function handleChangeImage() {
-    setImage({ file: null, imagePreview: author.profile?.avatar_url || null });
+    setImage({ file: null, imagePreview: author?.profile?.avatar_url || null });
     // setImageErrors("");
     if (imageInputRef.current) {
       imageInputRef.current.value = null;
@@ -440,7 +422,7 @@ function AuthorInfo() {
       <div className="flex items-start md:items-center col-span-1">
         <img
           src={
-            author.profile?.avatar_url ||
+            author?.profile?.avatar_url ||
             "https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/riva-dashboard-tailwind/img/avatars/avatar1.jpg"
           }
           alt="author-avatar"
@@ -473,7 +455,7 @@ function AuthorInfo() {
           @{author.username}
         </div>
         <div id="author-bio" className="text-xs py-1 md:text-sm px-1">
-          {author.profile?.bio}
+          {author?.profile?.bio}
         </div>
 
         <div className="flex flex-wrap justify-between pt-2">

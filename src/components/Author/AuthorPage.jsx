@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { fetchArticles } from "../../api/authorApi";
+import { fetchArticles } from "@/api/authorApi";
 import { truncateString, formatDate } from "@/utils/helper";
-import { BlogIcon } from "../../assets/Icons";
+import { BlogIcon, ModifyIcon, OptionIcon } from "@/assets/Icons";
 import { Triangle } from "react-loader-spinner";
+import ArticleId from "../Articles/ArticleId";
 
 function AuthorArticles({ tab }) {
   const { auth } = useAuth();
@@ -15,6 +16,7 @@ function AuthorArticles({ tab }) {
     published: null,
     unpublished: null,
   });
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     let articleType = tab === "published" ? "published" : "unpublished";
@@ -76,12 +78,41 @@ function AuthorArticles({ tab }) {
                   key={article.id}
                   className=" bg-white rounded-lg max-w-5xl"
                 >
-                  <div className="flex font-semibold">
-                    <h2 className="text-lg  text-black">
-                      {truncateString(article.title, 125)}
-                    </h2>
-                    <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-1 h-5">
-                      {article.published ? "Public" : "Private"}
+                  <div className="flex justify-between font-semibold">
+                    <div className="flex">
+                      <h2 className="text-lg text-black">
+                        {truncateString(article.title, 50)}
+                      </h2>
+                      <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-1 h-5">
+                        {article.published ? "Public" : "Private"}
+                      </div>
+                    </div>
+                    <div className="self-start ml-5 mb-2 relative">
+                      {article.user.id===auth.userInfo.id && <button
+                        onClick={() =>
+                          setShowOptions(
+                            showOptions === article.id ? null : article.id
+                          )
+                        }
+                      >
+                        <OptionIcon height="12" width="12" />
+                      </button>}
+                      {showOptions === article.id && (
+                        <div className="block flex flex-col bg-gray-100 shadow-md rounded-md absolute right-0">
+                          <Link
+                            to={`/articles/${article.id}/update`}
+                            className="text-sm py-2 px-4  md:text-base text-left rounded-md hover:bg-gray-200"
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            to={`/articles/${article.id}/update`}
+                            className="text-sm py-2 px-4 md:text-base text-left rounded-md hover:bg-gray-200"
+                          >
+                            Delete
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <p className="text-sm text-gray-700">{article.description}</p>
@@ -98,14 +129,11 @@ function AuthorArticles({ tab }) {
                         {formatDate(article.updatedAt)}
                       </span>
                     </div>
-                    <Link className="m-2" to={`/articles/${article.id}`}>
-                      <BlogIcon
-                        className="self-end"
-                        height="20"
-                        width="20"
-                        color="black"
-                      />
-                    </Link>
+                    <div className="flex self-end mr-2 mt-2">
+                      <Link to={`/articles/${article.id}`}>
+                        <BlogIcon height="20" width="20" color="black" />
+                      </Link>
+                    </div>
                   </div>
                   <div className="h-px bg-gray-300 my-4"></div>
                 </div>
@@ -114,7 +142,9 @@ function AuthorArticles({ tab }) {
           </div>
         </div>
       ) : (
-        <div className="font-semibold flex min-h-80 text-gray-500 justify-center items-center text-xl md:text-2xl">No Contributions yet!</div>
+        <div className="font-semibold flex min-h-80 text-gray-500 justify-center items-center text-xl md:text-2xl">
+          No Contributions yet!
+        </div>
       )}
     </div>
   );
@@ -143,7 +173,7 @@ function AuthorNav({ tab }) {
             className={getTabClass("published")}
             to="?tabs=published"
           >
-            Published 
+            Published
             <span className="hidden md:inline-block ml-1">Articles</span>
           </Link>
         </li>

@@ -23,7 +23,7 @@ function CreateArticles() {
   const [imageErrors, setImageErrors] = useState("");
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
-  const { apiUrl, cloudName, presetName, tinymceKey } = config;
+  const { apiUrl, tinymceKey } = config;
 
   //checks for clearing of the errors in form before sending the data to backend
   useEffect(() => {
@@ -46,26 +46,6 @@ function CreateArticles() {
     }
     sendValtoBackend({ ...formValues, imageUrl: uploadedImageUrl });
   }
-
-  // uploading image to Cloudinary and generating a link to store in imageUrl
-  // async function uploadToCloudinary(image) {
-  //   const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("file", image);
-  //     formData.append("upload_preset", presetName);
-  //     formData.append("tags", "cover-image");
-  //     const response = await fetch(CLOUDINARY_URL, {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-  //     const result = await response.json();
-  //     return result.secure_url;
-  //   } catch (error) {
-  //     console.error("Error occured while uploading to cloudinary", error);
-  //     return null;
-  //   }
-  // }
 
   // sending values to backend
   async function sendValtoBackend(formValues) {
@@ -165,7 +145,7 @@ function CreateArticles() {
   }
 
   return (
-    <div id="new-post-inputs" className="text-black p-6 rounded-md">
+    <div id="new-post-inputs" className="sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md">
       <div id="new-post-image-btn" className="mb-4">
         {!imagePreview ? (
           <>

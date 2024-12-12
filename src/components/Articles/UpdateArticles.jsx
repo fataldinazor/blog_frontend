@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchArticleWithId, updateArticleWithId } from "../../api/articleApi";
+import { fetchArticleWithId, updateArticleWithId, deletePostWithId } from "../../api/articleApi";
 import AuthorizeError from "../Error/AuthorizeError";
 import { Editor } from "@tinymce/tinymce-react";
 import config from "../../config";
@@ -30,6 +30,7 @@ function UpdateArticles() {
   const [isSubmit, setIsSubmit] = useState(false);
   const [isImageDirty, setIsImageDirty] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const [isConfirmationVisible, setIsConfirmationVisible]=useState(false);
   const imageInputRef = useRef(null);
   const editorRef = useRef();
   const { tinymceKey } = config;
@@ -223,6 +224,23 @@ function UpdateArticles() {
     // setIsFormDirty(true);
   }
 
+  function handleDelete() {
+    // deletePostWithid(params.articleId);
+    setIsConfirmationVisible(true);
+  }
+
+  async function confirmDelete(){
+    setIsConfirmationVisible(false);
+    setIsLoading(true);
+    await deletePostWithId(auth.token, params.articleId);
+    setIsLoading(false);
+    navigate(`/author/${auth.userInfo.id}`);
+  }
+
+  function cancelDelete(){
+    setIsConfirmationVisible(false);
+  }
+
   if (!isAuthorized) {
     return <AuthorizeError />;
   }
@@ -304,7 +322,7 @@ function UpdateArticles() {
             id="new-post-title"
             name="title"
             onChange={handleChange}
-            value={formValues.title || ""}
+            value={formValues.title ||""}
             rows={2}
             cols={35}
             className="text-xl md:text-3xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
@@ -350,22 +368,52 @@ function UpdateArticles() {
           )}
         </div>
         <div id="new-post-published" className="mt-4 text-xs md:font-semibold">
-          <label htmlFor="isPublished" className="block">
-            <button
-              className="p-2 px-3 mr-2  bg-black border border-black text-white rounded-md shadow-md hover:bg-white hover:text-black"
-              onClick={() => handleSubmit(true)}
-            >
-              Update
+          <div className=" flex justify-between">
+            <label htmlFor="isPublished" className="block">
+              <button
+                className="py-2 px-3 mr-2  bg-black border border-black text-white rounded-md shadow-md hover:bg-white hover:text-black"
+                onClick={() => handleSubmit(true)}
+              >
+                Update
+              </button>
+              <button
+                className="p-2 text-gray-600"
+                onClick={() => handleSubmit(false)}
+              >
+                Make this a Draft
+              </button>
+            </label>
+            <button onClick={handleDelete}>
+              <div className="flex gap-1 items-center bg-red-700 text-white rounded-md py-2 p-3">
+                <TrashIcon height="20" width="20" color="white" />
+                Delete Post
+              </div>
             </button>
-            <button
-              className="p-2 text-gray-600"
-              onClick={() => handleSubmit(false)}
-            >
-              Make this a Draft
-            </button>
-          </label>
+          </div>
         </div>
       </div>
+      {isConfirmationVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-md text-center">
+            <h2 className="text-lg font-bold mb-4">Are you sure?</h2>
+            <p className="mb-6">This action cannot be undone.</p>
+            <div className="flex justify-center gap-4">
+              <button
+                className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
+                onClick={confirmDelete}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="py-2 px-4 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
