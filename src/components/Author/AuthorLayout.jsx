@@ -63,7 +63,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
     setIsSubmit(false);
     let uploadedAvatarUrl = null;
     let updatedFormValues = { ...formValues };
-    
+
     if (image.file) {
       try {
         uploadedAvatarUrl = await uploadToCloudinary(image.file);

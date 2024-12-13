@@ -15,9 +15,9 @@ import {
   LikedIcon,
   CommentIcon,
   ShareIcon,
-} from "../../assets/Icons";
+} from "@/assets/Icons";
 import { Triangle } from "react-loader-spinner";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const Comments = lazy(() => import("./Comments"));
 
@@ -174,8 +174,10 @@ function Article({ article, user }) {
         )}
         <div className="px-5 md:px-10">
           <div className="mx-auto max-w-screen-md text-lg tracking-wide text-gray-700">
-            <p className="text-sm text-gray-500 md:text-base">
-              Published{" "}
+            <p className="text-sm text-gray-500 md:text-base font-semibold mt-2">
+              {article.createdAt === article.updatedAt
+                ? "Published on: "
+                : "Updated on: "}
               {new Date(article.updatedAt).toLocaleDateString("en-US", {
                 day: "2-digit",
                 month: "short",
@@ -234,7 +236,7 @@ function Article({ article, user }) {
 }
 
 //Post Interaction component
-function PostInteraction({ counts, commentRef,comments }) {
+function PostInteraction({ counts, commentRef, comments }) {
   const [isLiked, setIsLiked] = useState();
   const [isBookmarked, setIsBookmarked] = useState();
   const [likesCount, setLikesCount] = useState(0);
@@ -242,13 +244,13 @@ function PostInteraction({ counts, commentRef,comments }) {
   const [commentCount, setCommentCount] = useState(null);
   const { auth } = useAuth();
   const params = useParams();
-  
-  //for updating comments count when ever the 
-  useEffect(()=>{
-    if(commentCount!==null){;
+
+  //for updating comments count when ever the
+  useEffect(() => {
+    if (commentCount !== null) {
       setCommentCount(comments.length);
     }
-  },[comments])
+  }, [comments]);
 
   // fetching counts of likes, bookmarks, comments
   useEffect(() => {
@@ -259,8 +261,7 @@ function PostInteraction({ counts, commentRef,comments }) {
     }
   }, [counts]);
 
-
-  // fetching if the logged user has liked and bookmarked the post or not 
+  // fetching if the logged user has liked and bookmarked the post or not
   useEffect(() => {
     const fetchData = async () => {
       const result = await UserLikedBookmarkPost(auth.token, params.articleId);
@@ -271,7 +272,7 @@ function PostInteraction({ counts, commentRef,comments }) {
     // console.log(likesCount, bookmarkCount, isLiked, isBookmarked, commentCount);
   }, [params.articleId, auth.token]);
 
-  // scrolling to the comment section 
+  // scrolling to the comment section
   function handleCommentScroll(ref) {
     window.scrollTo({
       top: ref.offsetTop,
@@ -280,12 +281,12 @@ function PostInteraction({ counts, commentRef,comments }) {
     });
   }
 
-  // for the share button 
+  // for the share button
   function copyToClipboard() {
     navigator.clipboard.writeText(window.location.href);
-    toast.success("Link Copied to Clipboard",{
-      position:"top-center",
-      duration:2000,
+    toast.success("Link Copied to Clipboard", {
+      position: "top-center",
+      duration: 2000,
     });
   }
 
@@ -389,10 +390,10 @@ function ArticleId() {
   const commentComponentRef = useRef();
   const { auth } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  const [comments, setComments]=useState({});
+  const [comments, setComments] = useState({});
   const params = useParams();
 
-  //fetching the article with id 
+  //fetching the article with id
   useEffect(() => {
     // window.scrollTo(0, 0);
     const fetchData = async () => {

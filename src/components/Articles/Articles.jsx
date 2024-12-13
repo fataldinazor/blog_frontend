@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useLocation, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { formatDate, truncateString } from "../../utils/helper";
-// import ahead from "../../assets/ahead.svg";
 import { BlogIcon } from "../../assets/Icons";
 import {
   fetchAllPublishedArticles,
@@ -86,7 +85,11 @@ function ArticleList({ articles, articlesPerPage }) {
                 )}
                 <div className="px-6 py-2">
                   <span className="block float text-xs lg:text-base font-semibold text-gray-500">
-                    Pubilshed: {formatDate(article.updatedAt)}
+                    {article.createdAt === article.updatedAt
+                      ? "Pubilshed on: "
+                      : "Updated on: "}
+
+                    {formatDate(article.updatedAt)}
                   </span>
                   <div>
                     <Link
@@ -187,13 +190,13 @@ function TopAuthorList() {
         >
           {authors &&
             authors.map((author) => (
-              <li key={author.username} className="py-3 sm:py-4">
+              <li key={author?.username} className="py-3 sm:py-4">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <img
                       className="w-8 h-8 rounded-full"
                       src={
-                        author.profile?.avatar_url ||
+                        author?.profile?.avatar_url ||
                         "https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
                       }
                       alt={author.username || "Author Avatar"}
@@ -201,16 +204,16 @@ function TopAuthorList() {
                   </div>
                   <div className="flex-1 min-w-0 ms-4">
                     <Link to={`/author/${author.id}`}>
-                    <p className="text-sm font-semibold text-gray-900 truncate">
-                      {author.fname} {author.lname}
-                    </p>
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {author.fname} {author.lname}
+                      </p>
                     </Link>
                     <p className="text-sm text-gray-500 truncate">
-                      {author.username || "No email provided"}
+                      {author?.username || "No email provided"}
                     </p>
                   </div>
                   <div className="inline-flex items-center text-base font-semibold ">
-                    {author._count?.posts || 0} Posts
+                    {author?._count?.posts || 0} Posts
                   </div>
                 </div>
               </li>

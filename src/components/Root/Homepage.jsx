@@ -9,32 +9,7 @@ import {
 } from "../ui/carousel";
 import { fetchHomepageArticles } from "../../api/homepage";
 import { Link } from "react-router-dom";
-
-const HeroSection = () => {
-  return (
-    <section className="flex items-center justify-center h-screen bg-black text-white overflow-hidden relative">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/path-to-your-image.jpg)" }}
-      ></div>
-
-      <div className="relative z-10 text-center px-6 md:px-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
-          Welcome to Your Future
-        </h1>
-        <p className="text-lg md:text-xl mb-6 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
-          Discover endless possibilities with our services.
-        </p>
-        <a
-          href="#explore"
-          className="inline-block px-8 py-3 text-lg bg-white text-black font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 animate__animated animate__fadeIn animate__delay-3s"
-        >
-          Explore Now
-        </a>
-      </div>
-    </section>
-  );
-};
+import { BlogIcon } from "@/assets/Icons";
 
 export function CarouselSize({ articles }) {
   return (
@@ -45,13 +20,13 @@ export function CarouselSize({ articles }) {
             <div className="p-1">
               <Card>
                 <CardContent
-                  className="relative flex aspect-square rounded-md items-center justify-center p-6 bg-cover bg-center"
+                  className="relative flex aspect-square rounded-xl items-center justify-center p-6 bg-cover bg-center"
                   style={{
                     backgroundImage: `url(${article.image_url})`,
                   }}
                 >
-                  <div className="absolute inset-0 rounded-md bg-black bg-opacity-30"></div>
-                  <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white p-2">
+                  <div className="absolute inset-0 rounded-xl bg-black bg-opacity-30"></div>
+                  <div className="absolute bottom-0 rounded-xl left-0 w-full bg-black bg-opacity-60 text-white p-2">
                     <h2 className="text-sm md:text-base font-semibold truncate ...">
                       {article.title}
                     </h2>
@@ -68,22 +43,71 @@ export function CarouselSize({ articles }) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
+      <CarouselPrevious className="bg-black">
+      </CarouselPrevious>
+      <CarouselNext className="bg-black">
+      </CarouselNext>
     </Carousel>
   );
 }
 
-function Homepage() {
+const HeroSection = ({ articles }) => {
+  return (
+    <section className="flex flex-col h-full items-center justify-center bg-black text-white overflow-hidden relative">
+      {/* Background Image with Overlay */}
+      <div
+        className="absolute inset-0 bg-cover"
+        style={{
+          backgroundImage: `url('https://res.cloudinary.com/dafr5o0f3/image/upload/v1734104563/oybaylem9u0ig2iixvlv.jpg')`,
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+      </div>
+
+      <div className="relative z-10 flex flex-col justify-center items-center sm:gap-10 md:gap-3">
+        <div className="lg:hidden pb-5">
+          <BlogIcon color="white" height="50" width="50" />
+        </div>
+        <div className="relative z-10 text-center px-10 md:max-w-screen-md lg:max-w-screen-lg">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
+            Curating Thoughts, Shaping Futures
+          </h1>
+          <p className="text-sm md:text-xl mb-6 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
+            Stay updated with the latest trends, insights, and tips from the
+            world of technology, development, and more.
+          </p>
+          <Link
+            to="/articles"
+            className="inline-block px-4 py-3 text-sm md:text-lg md:px-8 bg-white text-black font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 animate__animated animate__fadeIn animate__delay-3s"
+          >
+            Explore Articles
+          </Link>
+        </div>
+      </div>
+
+      <div className="relative z-10 w-full mt-8 md:mt-12 text-white">
+        <div className="px-4 sm:px-8 md:px-12">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-4 md:mb-8">
+            Featured Articles
+          </h2>
+          <div className="m-2 flex justify-center rounded-md">
+            <CarouselSize articles={articles} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Homepage = () => {
   const [articles, setArticles] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const posts = await fetchHomepageArticles();
-        console.log(posts);
         setArticles(posts);
         setIsLoading(false);
       } catch (error) {
@@ -94,40 +118,10 @@ function Homepage() {
   }, []);
 
   return (
-    <div className="flex flex-col justify-between">
-      {/* <section className="bg-[url(https://img.freepik.com/free-photo/medium-shot-man-wearing-vr-glasses_23-2149126949.jpg?t=st=1733844896~exp=1733848496~hmac=df0cb4311a981e6e5dee1dc053377e48f26d52683a260a25a309b1f6c28a18b6&w=1380)] bg-cover bg-center bg-no-repeat lg:bg-top">
-        <div className="bg-black/50 h-[300px] md:h-[400px] lg:h-[450px] px-6 sm:px-12 md:px-16 py-16 md:py-20">
-          <div className="flex flex-col items-start">
-            <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-              Latest Blogs
-            </h2>
-            <p className="hidden max-w-lg text-white/90 md:mt-6 md:block md:text-base md:leading-normal lg:text-lg lg:leading-relaxed">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Inventore officia corporis quasi doloribus iure architecto quae
-              voluptatum beatae excepturi dolores.
-            </p>
-            <div className="mt-4 sm:mt-8">
-              <Link
-                to="/articles"
-                className="inline-block py-2 px-4 bg-purple-950 text-white font-semibold rounded-lg hover:bg-purple-700 transition duration-300"
-              >
-                Explore
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section> */}
-      <HeroSection />
-      <div className="flex flex-col gap-5 my-5">
-        <h1 className="font-bold md:font-bold text-center text-2xl md:text-2xl lg:text-4xl">
-          Explore a Range of Articles
-        </h1>
-        <div className="px-4 sm:px-8 md:px-12 flex justify-center">
-          {articles && <CarouselSize articles={articles} />}
-        </div>
-      </div>
+    <div className="h-full flex flex-col">
+      {articles && articles.length && <HeroSection articles={articles} />}
     </div>
   );
-}
+};
 
 export default Homepage;

@@ -23,15 +23,15 @@ function DropDown() {
   }, []);
 
   return (
-    <div ref={dropdownRef}>
+    <div ref={dropdownRef} className="z-50">
       <button
         id="dropdownDefaultButton"
         data-dropdown-toggle="dropdown"
-        className="text-white bg-black border border-white  hover:bg-white hover:text-black focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
+        className="text-white bg-black border border-white  hover:bg-white hover:text-black focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-3 md:px-5 py-2.5 text-center inline-flex items-center"
         type="button"
         onClick={() => setIsOpen((prevState) => !prevState)}
       >
-        Dropdown button{" "}
+        <p className="text-gray-400 ">@<span className="text-white truncate">{auth.userInfo.username}</span></p>
         <svg
           className="w-2.5 h-2.5 ms-3"
           aria-hidden="true"
@@ -101,7 +101,7 @@ function DropDown() {
 }
 
 function Header() {
-  const { auth, logout } = useAuth();
+  const { auth} = useAuth();
   return (
     <div
       id="header"
@@ -109,16 +109,14 @@ function Header() {
     >
       <Link to="/" id="logo" className="flex items-center">
         <BlogIcon height="30" with="30" color="white" />
-        <h1 className="hidden md:block text-2xl font-bold">BlogSite</h1>
+        <h1 className="hidden md:block text-3xl font-bold ml-2">InqPress</h1>
       </Link>
 
-      {/* Navbar Section */}
       <div id="header-navbar" className="flex items-center space-x-6">
         <div id="articlesNav" className="cursor-pointer hover:text-gray-300">
           <Link to="/articles">Articles</Link>
         </div>
 
-        {/* Conditional Rendering for Auth Navigation */}
         {!auth.isAuthenticated ? (
           <div id="authNav" className="flex items-center space-x-4">
             <button
