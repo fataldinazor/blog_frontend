@@ -1,11 +1,112 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { fetchArticles } from "@/api/authorApi";
-import { truncateString, formatDate } from "@/utils/helper";
-import { BlogIcon, ModifyIcon, OptionIcon } from "@/assets/Icons";
+import { fetchArticles, fetchBookmarkedPostsAPI } from "@/api/authorApi";
+import { formatDate } from "@/utils/helper";
+import { BlogIcon, OptionIcon } from "@/assets/Icons";
 import { Triangle } from "react-loader-spinner";
-import ArticleId from "../Articles/ArticleId";
+// import ArticleId from "../Articles/ArticleId";
+import NotAuthorized from "../Error/AuthorizeError";
+import toast from "react-hot-toast";
+
+function ShowBtn({ article, setShowOptions, showOptions }) {
+  return (
+    <div className="self-start ml-5 mb-2 relative">
+      <button
+        onClick={() =>
+          setShowOptions(showOptions === article.id ? null : article.id)
+        }
+      >
+        <OptionIcon height="12" width="12" />
+      </button>
+      {showOptions === article.id && (
+        <div className="block flex flex-col bg-gray-100 shadow-md rounded-md absolute right-0">
+          <Link
+            to={`/articles/${article.id}/update`}
+            className="text-sm py-2 px-4  md:text-base text-left rounded-md hover:bg-gray-200"
+          >
+            Edit
+          </Link>
+          <Link
+            to={`/articles/${article.id}/update`}
+            className="text-sm py-2 px-4 md:text-base text-left rounded-md hover:bg-gray-200"
+          >
+            Delete
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DislpayArticles({ articles, tab }) {
+  const [showOptions, setShowOptions] = useState(false);
+  const { auth } = useAuth();
+  return (
+    <div className="articles-list">
+      <div className="bg-white mt-2">
+        <div className="min-w-full">
+          <h1 className="text-2xl font-bold text-black my-6">
+            {tab === "published"
+              ? `Contributions`
+              : tab === "unpublished"
+              ? `Drafts`
+              : `Bookmarks`}
+          </h1>
+          <div className="flex flex-col p-2">
+            {articles.map((article) => (
+              <div key={article.id} className=" bg-white rounded-lg max-w-5xl">
+                <div className="flex justify-between font-semibold">
+                  <div className="flex">
+                    <h2 className="text-lg text-black leading-tight tuncate md:leading-normal">
+                      {article.title}
+                    </h2>
+                    <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-1 h-5">
+                      {article.published ? "Public" : "Private"}
+                    </div>
+                  </div>
+                  <div className="self-start ml-5 mb-2 relative">
+                    {article?.user.id === auth.userInfo.id && (
+                      <ShowBtn
+                        article={article}
+                        setShowOptions={setShowOptions}
+                        showOptions={showOptions}
+                      />
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700">{article.description}</p>
+                <div className="flex justify-between gap-2">
+                  <div className="flex justify-start mt-4 gap-2">
+                    <span className="hidden md:block flex items-center text-sm text-gray-800">
+                      {article?.user.username}
+                      <span> I </span>
+                    </span>
+                    <span className="hidden md:block text-sm text-gray-500">
+                      {/* {Published on} */}
+                      {article.createdAt === article.updatedAt
+                        ? "Published on"
+                        : "Updated on"}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {formatDate(article.updatedAt)}
+                    </span>
+                  </div>
+                  <div className="flex self-end mr-2 mt-2">
+                    <Link to={`/articles/${article.id}`}>
+                      <BlogIcon height="20" width="20" color="black" />
+                    </Link>
+                  </div>
+                </div>
+                <div className="h-px bg-gray-300 my-4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AuthorArticles({ tab }) {
   const { auth } = useAuth();
@@ -16,39 +117,61 @@ function AuthorArticles({ tab }) {
     published: null,
     unpublished: null,
   });
-  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
-    let articleType = tab === "published" ? "published" : "unpublished";
-    if (cachedArticles[articleType]) {
-      setArticles(cachedArticles[articleType]);
-    } else {
-      setIsLoading(true);
-      const getArticles = async () => {
+    const fetchData = async () => {
+      let cacheKey;
+      let fetchFunction;
+
+      if (tab === "published") {
+        fetchFunction = () =>
+          fetchArticles("published", auth.token, params.authorId);
+        cacheKey = "published";
+      } else if (tab === "unpublished") {
+        if (auth.userInfo.id !== parseInt(params.authorId)) {
+          setIsLoading(false);
+          return;
+        }
+        fetchFunction = () =>
+          fetchArticles("unpublished", auth.token, params.authorId);
+        cacheKey = "unpublished";
+      } else if (tab === "bookmarks") {
+        if (auth.userInfo.id !== parseInt(params.authorId)) {
+          setIsLoading(false);
+          return;
+        }
+        fetchFunction = () =>
+          fetchBookmarkedPostsAPI(auth.token, params.authorId);
+        cacheKey = "bookmarks";
+      }
+
+      if (cachedArticles[cacheKey]) {
+        setArticles(cachedArticles[cacheKey]);
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
         try {
-          const result = await fetchArticles(
-            articleType,
-            auth.token,
-            params.authorId
-          );
-          if (result) {
-            setCachedArticles((prevCache) => ({
-              ...prevCache,
-              [articleType]: result,
+          const result = await fetchFunction();
+          console.log(result.posts);
+          if (result.success) {
+            setArticles(result.posts);
+            setCachedArticles((prevValue) => ({
+              ...prevValue,
+              [cacheKey]: result.posts,
             }));
-            setArticles(result);
+          } else {
+            toast.error(`Failed to fetch ${tab} data`);
           }
         } catch (error) {
-          console.log(`Error: ${error}`);
+          console.error(`Error occured ${tab} data`, error);
         } finally {
           setIsLoading(false);
         }
-      };
-      setTimeout(() => {
-        getArticles();
-      }, 2000);
-    }
-  }, [tab, params.authorId, auth.token]);
+      }
+    };
+    setIsLoading(true);
+    fetchData();
+  }, [tab, params.authorId, auth.token, cachedArticles]);
 
   if (isLoading) {
     return (
@@ -64,94 +187,23 @@ function AuthorArticles({ tab }) {
     );
   }
 
-  return (
-    <div className="">
-      {articles.length ? (
-        <div className="bg-white mt-2">
-          <div className="min-w-full">
-            <h1 className="text-2xl font-bold text-black my-6">
-              {tab === "published" ? `My Contributions` : `Unpublished Content`}
-            </h1>
-            <div className="flex flex-col p-2">
-              {articles.map((article) => (
-                <div
-                  key={article.id}
-                  className=" bg-white rounded-lg max-w-5xl"
-                >
-                  <div className="flex justify-between font-semibold">
-                    <div className="flex">
-                      <h2 className="text-lg text-black">
-                        {truncateString(article.title, 50)}
-                      </h2>
-                      <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-1 h-5">
-                        {article.published ? "Public" : "Private"}
-                      </div>
-                    </div>
-                    <div className="self-start ml-5 mb-2 relative">
-                      {article.user.id===auth.userInfo.id && <button
-                        onClick={() =>
-                          setShowOptions(
-                            showOptions === article.id ? null : article.id
-                          )
-                        }
-                      >
-                        <OptionIcon height="12" width="12" />
-                      </button>}
-                      {showOptions === article.id && (
-                        <div className="block flex flex-col bg-gray-100 shadow-md rounded-md absolute right-0">
-                          <Link
-                            to={`/articles/${article.id}/update`}
-                            className="text-sm py-2 px-4  md:text-base text-left rounded-md hover:bg-gray-200"
-                          >
-                            Edit
-                          </Link>
-                          <Link
-                            to={`/articles/${article.id}/update`}
-                            className="text-sm py-2 px-4 md:text-base text-left rounded-md hover:bg-gray-200"
-                          >
-                            Delete
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700">{article.description}</p>
-                  <div className="flex justify-between gap-2">
-                    <div className="flex justify-start mt-4 gap-2">
-                      <span className="hidden md:block flex items-center text-sm text-gray-800">
-                        {article.user.username}
-                        <span> I </span>
-                      </span>
-                      <span className="hidden md:block text-sm text-gray-500">
-                        Published on
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {formatDate(article.updatedAt)}
-                      </span>
-                    </div>
-                    <div className="flex self-end mr-2 mt-2">
-                      <Link to={`/articles/${article.id}`}>
-                        <BlogIcon height="20" width="20" color="black" />
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="h-px bg-gray-300 my-4"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="font-semibold flex min-h-80 text-gray-500 justify-center items-center text-xl md:text-2xl">
-          No Contributions yet!
-        </div>
-      )}
+  if (tab === "unpublished" && auth.userInfo.id !== parseInt(params.authorId)) {
+    return <NotAuthorized />;
+  }
+
+  return articles && articles.length ? (
+    <DislpayArticles articles={articles} tab={tab} />
+  ) : (
+    <div className="font-semibold flex min-h-80 text-gray-500 justify-center items-center text-xl md:text-2xl">
+      No Contributions yet!
     </div>
   );
 }
 
 function AuthorNav({ tab }) {
   const [activeTab, setActiveTab] = useState(tab);
+  const { auth } = useAuth();
+  const params = useParams();
 
   useEffect(() => {
     setActiveTab(tab);
@@ -177,15 +229,28 @@ function AuthorNav({ tab }) {
             <span className="hidden md:inline-block ml-1">Articles</span>
           </Link>
         </li>
-        <li>
-          <Link
-            aria-controls="unpublished articles"
-            className={getTabClass("unpublished")}
-            to="?tabs=unpublished"
-          >
-            Drafts
-          </Link>
-        </li>
+        {auth.userInfo.id === parseInt(params.authorId) && (
+          <>
+            <li>
+              <Link
+                aria-controls="unpublished articles"
+                className={getTabClass("unpublished")}
+                to="?tabs=unpublished"
+              >
+                Drafts
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="?tabs=bookmarks"
+                aria-controls="bookmarked articles"
+                className={getTabClass("bookmarks")}
+              >
+                Bookmarks
+              </Link>
+            </li>
+          </>
+        )}
       </ul>
     </div>
   );
@@ -194,7 +259,6 @@ function AuthorNav({ tab }) {
 function AuthorPage() {
   const [searchParams, setSearchParams] = useSearchParams("?tabs=published");
   const tab = searchParams.get("tabs");
-  // console.log(tab);
 
   return (
     <div className="flex flex-col w-full min-w-80 mb-6 break-words rounded-2xl">
@@ -205,7 +269,9 @@ function AuthorPage() {
           setSearchParams={setSearchParams}
           tab={tab}
         />
-        <AuthorArticles tab={tab} searchParams={searchParams} />
+        {/* {tab === "bookmarks" && <AuthorBookmarks />} */}
+        {/* {tab !== "bookmarks" && <AuthorArticles tab={tab} />} */}
+        <AuthorArticles tab={tab} />
       </div>
     </div>
   );

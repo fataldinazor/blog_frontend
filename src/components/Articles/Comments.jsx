@@ -7,11 +7,11 @@ import { formatDate } from "../../utils/helper";
 function Comments({comments, setComments}) {
   // const [comments, setComments] = useState({});
   const [userComment, setUserComment] = useState("");
-  const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState();
-  const [isDropDownOpen, setIsDropDown] = useState({});
   const { auth } = useAuth();
   const params = useParams();
+  const [loading, setLoading] = useState(true);
+  const [isDropDownOpen, setIsDropDown] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {

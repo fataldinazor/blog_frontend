@@ -369,7 +369,7 @@ function AuthorInfo() {
       const fetchData = async () => {
         try {
           const result = await fetchAuthorDetails(auth.token, params.authorId);
-          console.log(result);
+          // console.log(result);
           if (result) {
             setAuthor(result);
           }

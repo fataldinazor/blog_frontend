@@ -53,7 +53,7 @@ const fetchArticles = async (articleType, userToken, authorId) => {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status:${response.status}`);
+      return await response.json();
     }
     const result = await response.json();
     return result;
@@ -62,6 +62,26 @@ const fetchArticles = async (articleType, userToken, authorId) => {
     return [];
   }
 };
+
+const fetchBookmarkedPostsAPI=async(userToken, authorId)=>{
+  const url=`${apiUrl}users/${authorId}/posts/bookmarks`;
+  try {
+    const response = await fetch(url,{
+      headers:{
+        Authorization: `Bearer ${userToken}`
+      }
+    })
+    if(!response.ok){
+      const errorMessage = await response.json();
+      return errorMessage
+    }
+    const result= await response.json();
+    console.log(result)
+    return result;
+  } catch (error) {
+    return {msg:"Network Error", error}
+  }
+}
 
 const fetchAuthorDetails = async (userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}`;
@@ -74,7 +94,6 @@ const fetchAuthorDetails = async (userToken, authorId) => {
     if (!response.ok) {
       throw new Error(`HTTP error! status:${response.status}`);
     }
-    // console.log()
     return await response.json();
   } catch (error) {
     console.log("Error from the backend" + error);
@@ -87,4 +106,5 @@ export {
   fetchAuthorDetails,
   uploadToCloudinary,
   updateAuthorPage,
+  fetchBookmarkedPostsAPI
 };

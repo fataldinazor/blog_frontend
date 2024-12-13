@@ -10,6 +10,32 @@ import {
 import { fetchHomepageArticles } from "../../api/homepage";
 import { Link } from "react-router-dom";
 
+const HeroSection = () => {
+  return (
+    <section className="flex items-center justify-center h-screen bg-black text-white overflow-hidden relative">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/path-to-your-image.jpg)" }}
+      ></div>
+
+      <div className="relative z-10 text-center px-6 md:px-12">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
+          Welcome to Your Future
+        </h1>
+        <p className="text-lg md:text-xl mb-6 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
+          Discover endless possibilities with our services.
+        </p>
+        <a
+          href="#explore"
+          className="inline-block px-8 py-3 text-lg bg-white text-black font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 animate__animated animate__fadeIn animate__delay-3s"
+        >
+          Explore Now
+        </a>
+      </div>
+    </section>
+  );
+};
+
 export function CarouselSize({ articles }) {
   return (
     <Carousel className="w-2/3 max-w-sm md:max-w-screen-md lg:max-w-screen-lg">
@@ -69,7 +95,7 @@ function Homepage() {
 
   return (
     <div className="flex flex-col justify-between">
-      <section className="bg-[url(https://img.freepik.com/free-photo/medium-shot-man-wearing-vr-glasses_23-2149126949.jpg?t=st=1733844896~exp=1733848496~hmac=df0cb4311a981e6e5dee1dc053377e48f26d52683a260a25a309b1f6c28a18b6&w=1380)] bg-cover bg-center bg-no-repeat lg:bg-top">
+      {/* <section className="bg-[url(https://img.freepik.com/free-photo/medium-shot-man-wearing-vr-glasses_23-2149126949.jpg?t=st=1733844896~exp=1733848496~hmac=df0cb4311a981e6e5dee1dc053377e48f26d52683a260a25a309b1f6c28a18b6&w=1380)] bg-cover bg-center bg-no-repeat lg:bg-top">
         <div className="bg-black/50 h-[300px] md:h-[400px] lg:h-[450px] px-6 sm:px-12 md:px-16 py-16 md:py-20">
           <div className="flex flex-col items-start">
             <h2 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white">
@@ -90,7 +116,8 @@ function Homepage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
+      <HeroSection />
       <div className="flex flex-col gap-5 my-5">
         <h1 className="font-bold md:font-bold text-center text-2xl md:text-2xl lg:text-4xl">
           Explore a Range of Articles
