@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { storingUserToLS } from "../../utils/helper";
+import { signupAuthorAPI } from "@/api/authApi";
+import toast from "react-hot-toast";
 
 function AuthorRegister() {
   const [formValues, setFormValues] = useState({
@@ -29,6 +31,7 @@ function AuthorRegister() {
     }
   }, [formErrors]);
 
+  // sending the values to the backend bia api
   async function createNewAuthor(
     fname,
     lname,
@@ -36,45 +39,29 @@ function AuthorRegister() {
     password,
     confirmPassword
   ) {
-    // console.log("New Author created");
-    try {
-      const url = "http://localhost:3000/api/v1/auth/author/signup";
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fname,
-          lname,
-          username,
-          password,
-          confirmPassword,
-        }),
+    const result = await signupAuthorAPI(
+      fname,
+      lname,
+      username,
+      password,
+      confirmPassword
+    );
+    if (result?.success) {
+      const { token, user } = result;
+      const expiry = storingUserToLS(user, token);
+      setAuth({
+        isAuthenticated: true,
+        token: token,
+        userInfo: user,
+        expiry: expiry,
       });
-      const result = await response.json();
-      const { success, token, user } = result;
-      if (success) {
-        const expiry = storingUserToLS(user, token);
-        if (typeof expiry === "number") {
-          setAuth({
-            isAuthenticated: true,
-            token: token,
-            userInfo: user,
-            expiry: expiry,
-          });
-          navigate("/articles");
-        } else {
-          // Show the error
-          console.log(expiry);
-          navigate("/login");
-        }
-      } else {
-        console.log(result);
-      }
-    } catch (error) {
-      console.log("Error: " + error);
-      console.log(error.response);
+      toast.success(
+        result.msg || "The Author Profile is created successfully!"
+      );
+      navigate("/articles");
+    } else {
+      toast.error(result.msg || "Problem creating Author Profile");
+      console.log(result);
     }
   }
 

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { storingUserToLS } from "../../utils/helper";
+import { signupUserAPI } from "@/api/authApi";
+import toast from "react-hot-toast";
 function UserRegister() {
   const [formValues, setFormValues] = useState({
     username: "",
@@ -54,38 +56,21 @@ function UserRegister() {
 
   //handling the user signup api
   async function signupUser(username, password, confirmPassword) {
-    try {
-      const url = `http://localhost:3000/api/v1/auth/user/signup`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password, confirmPassword }),
+    const result = await signupUserAPI(username, password, confirmPassword);
+    if (result?.success) {
+      const { token, user } = result;
+      const expiry = storingUserToLS(user, token);
+      setAuth({
+        isAuthenticated: true,
+        token: token,
+        userInfo: user,
+        expiry: expiry,
       });
-      const result = await response.json();
-      console.log(result);
-      const { success, token, user } = result;
-      if (success) {
-        const expiry = storingUserToLS(user, token);
-        if (typeof expiry === "number") {
-          setAuth({
-            isAuthenticated: true,
-            token: token,
-            userInfo: user,
-            expiry: expiry,
-          });
-          navigate("/articles");
-        } else {
-          // Show the error
-          console.log(expiry);
-          navigate("/login");
-        }
-      } else if (!success) {
-        console.log("Failed to create a new User");
-      }
-    } catch (error) {
-      console.log(error);
+      toast.success("User Created Succesfully...Redirecting");
+      navigate("/articles");
+    } else {
+      toast.error(result.msg || "Failed to create a new User! Try again Later");
+      console.log("Failed to create a new User");
     }
   }
 

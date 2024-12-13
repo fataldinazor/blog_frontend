@@ -6,10 +6,10 @@ import {
   UserLikedBookmarkPost,
   handleLike,
   handleBookmark,
-} from "../../api/articleApi";
-import { useAuth } from "../../context/AuthContext";
-import { truncateString } from "../../utils/helper";
-import { BlogIcon } from "../../assets/Icons";
+} from "@/api/articleApi";
+import { useAuth } from "@/context/AuthContext";
+import { truncateString } from "@/utils/helper";
+import { BlogIcon } from "@/assets/Icons";
 import {
   BookmarkIcon,
   LikedIcon,
@@ -17,9 +17,11 @@ import {
   ShareIcon,
 } from "../../assets/Icons";
 import { Triangle } from "react-loader-spinner";
+import toast, { Toaster } from "react-hot-toast";
 
 const Comments = lazy(() => import("./Comments"));
 
+// suggested articles component
 function MoreArticles() {
   const [moreArticles, setMoreArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,6 +158,7 @@ function MoreArticles() {
   );
 }
 
+// Main Article Body
 function Article({ article, user }) {
   return (
     <main>
@@ -230,14 +233,24 @@ function Article({ article, user }) {
   );
 }
 
-function PostInteraction({ counts }) {
+//Post Interaction component
+function PostInteraction({ counts, commentRef,comments }) {
   const [isLiked, setIsLiked] = useState();
-  const [likesCount, setLikesCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState();
+  const [likesCount, setLikesCount] = useState(0);
   const [bookmarkCount, setBookmarkCount] = useState(0);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(null);
   const { auth } = useAuth();
   const params = useParams();
+  
+  //for updating comments count when ever the 
+  useEffect(()=>{
+    if(commentCount!==null){;
+      setCommentCount(comments.length);
+    }
+  },[comments])
+
+  // fetching counts of likes, bookmarks, comments
   useEffect(() => {
     if (counts) {
       setLikesCount(counts.likes);
@@ -246,6 +259,8 @@ function PostInteraction({ counts }) {
     }
   }, [counts]);
 
+
+  // fetching if the logged user has liked and bookmarked the post or not 
   useEffect(() => {
     const fetchData = async () => {
       const result = await UserLikedBookmarkPost(auth.token, params.articleId);
@@ -254,8 +269,27 @@ function PostInteraction({ counts }) {
     };
     fetchData();
     // console.log(likesCount, bookmarkCount, isLiked, isBookmarked, commentCount);
-  }, [params.articleId]);
+  }, [params.articleId, auth.token]);
 
+  // scrolling to the comment section 
+  function handleCommentScroll(ref) {
+    window.scrollTo({
+      top: ref.offsetTop,
+      left: 0,
+      behavior: "smooth",
+    });
+  }
+
+  // for the share button 
+  function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link Copied to Clipboard",{
+      position:"top-center",
+      duration:2000,
+    });
+  }
+
+  //handling the function of like
   async function handleLikeBtn() {
     const previousState = isLiked;
     setIsLiked(!isLiked);
@@ -268,7 +302,7 @@ function PostInteraction({ counts }) {
     try {
       const result = await handleLike(auth.token, params.articleId);
       if (!result) {
-        rollback(previousState);
+        // toast.error("Couldn't Like the Post")
         // handle error here
         // alert("Something went wrong. Couldn't like the Post")
       }
@@ -278,6 +312,7 @@ function PostInteraction({ counts }) {
     }
   }
 
+  //handling function of bookmark
   async function handleBookmarkBtn() {
     const previousState = isBookmarked;
     setIsBookmarked(!isBookmarked);
@@ -317,7 +352,7 @@ function PostInteraction({ counts }) {
       </div>
 
       <div id="comment-article" className="flex gap-2 lg:flex-col items-center">
-        <button>
+        <button onClick={() => handleCommentScroll(commentRef.current)}>
           <CommentIcon />
         </button>
         <p>{commentCount}</p>
@@ -338,12 +373,15 @@ function PostInteraction({ counts }) {
       </div>
 
       <div id="share-article">
-        <ShareIcon className="pr-3" />
+        <button onClick={copyToClipboard}>
+          <ShareIcon className="" />
+        </button>
       </div>
     </div>
   );
 }
 
+//article component
 function ArticleId() {
   const [article, setArticle] = useState({});
   const [user, setUser] = useState({});
@@ -351,8 +389,10 @@ function ArticleId() {
   const commentComponentRef = useRef();
   const { auth } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-  // const location = useLocation();
+  const [comments, setComments]=useState({});
   const params = useParams();
+
+  //fetching the article with id 
   useEffect(() => {
     // window.scrollTo(0, 0);
     const fetchData = async () => {
@@ -371,6 +411,7 @@ function ArticleId() {
     }, 2000);
   }, [params.articleId]);
 
+  //this is for recoganising the entrance of comment section in user view
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const observer = new IntersectionObserver(
@@ -417,7 +458,13 @@ function ArticleId() {
             id="left-side"
             className="bg-white z-10 mx-1 fixed bottom-0 w-full lg:static lg:bg-inherit lg:col-span-1 lg:py-20 lg:pl-10 p"
           >
-            {article?._count && <PostInteraction counts={article._count} />}
+            {article?._count && (
+              <PostInteraction
+                counts={article._count}
+                commentRef={commentComponentRef}
+                comments={comments}
+              />
+            )}
           </div>
 
           <div
@@ -425,7 +472,7 @@ function ArticleId() {
             className="m-2 lg:col-span-8 flex flex-col bg-white rounded-lg"
           >
             <Article article={article} user={user}></Article>
-            <div ref={commentComponentRef}>
+            <div ref={commentComponentRef} className="min-h-40">
               {showCommentsComponent && (
                 <Suspense
                   fallback={
@@ -438,7 +485,7 @@ function ArticleId() {
                     />
                   }
                 >
-                  <Comments />
+                  <Comments comments={comments} setComments={setComments} />
                 </Suspense>
               )}
             </div>

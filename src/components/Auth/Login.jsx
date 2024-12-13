@@ -1,55 +1,45 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { storingUserToLS } from "../../utils/helper";
+import { useAuth } from "@/context/AuthContext";
+import { storingUserToLS } from "@/utils/helper";
+import { loginUserAPI } from "@/api/authApi";
+import toast, { Toaster } from "react-hot-toast";
 
 function Login() {
   const [formValues, setFormValues] = useState({ username: "", password: "" });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
-  const { auth, setAuth } = useAuth();
+  const { setAuth } = useAuth();
+  const [isLoading, setIsLoading]= useState();
 
   //checking if formErrors exists else go for logigging in the client
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
+      setIsLoading(true);
       loginUser(formValues.username, formValues.password);
     }
   }, [formErrors]);
 
   // logging in the client from the backend
   async function loginUser(username, password) {
-    try {
-      const url = `http://localhost:3000/api/v1/auth/login`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+    const result = await loginUserAPI(username, password);
+    setIsLoading(false);
+    if (result.success) {
+      const { user, token } = result;
+      const expiry = storingUserToLS(user, token);
+      setAuth({
+        isAuthenticated: true,
+        token: token,
+        userInfo: user,
+        expiry: expiry,
       });
-      const result = await response.json();
-      const { success, user, token } = result;
-      if (success) {
-        const expiry = storingUserToLS(user, token);
-        if (typeof expiry === "number") {
-          setAuth({
-            isAuthenticated: true,
-            token: token,
-            userInfo: user,
-            expiry: expiry,
-          });
-          navigate("/articles");
-        } else {
-          // Show the error
-          console.log(expiry);
-          navigate("/login");
-        }
-      } else {
-        console.log(result);
-      }
-    } catch (error) {
-      console.log(`Error:${error}`);
+      toast.success("Login successful! Redirecting...", {
+        duration: 4000,
+      });
+      navigate("/articles");
+    } else {
+      toast.error(result.msg || "Login failed. Please try again.");
     }
   }
 
@@ -79,7 +69,7 @@ function Login() {
   return (
     <div
       id="login"
-      className="max-w-md mx-auto my-auto mt-10 p-6 bg-white outline-dashed rounded-lg shadow-md border"
+      className="max-w-md mx-auto my-auto mt-10 p-6 bg-white rounded-lg shadow-md"
     >
       <h1 className="text-2xl font-bold mb-6 text-center">
         Login into your Account

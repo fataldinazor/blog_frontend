@@ -18,8 +18,8 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
   });
   const [imageErrors, setImageErrors] = useState("");
   const [formValues, setFormValues] = useState({
-    fname: author.fname || "",
-    lname: author.lname || "",
+    fname: author?.fname || "",
+    lname: author?.lname || "",
     bio: author?.profile?.bio || "",
     avatar_url: author?.profile?.avatar_url || null,
   });
@@ -206,13 +206,6 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
       imageInputRef.current.click();
     }
   }
-
-  // //handling changes when formValues enetered
-  // function handleChange(event) {
-  //   const { name, value } = event.target;
-  //   setFormValues((prevState) => ({ ...prevState, [name]: value }));
-  //   setIsFormDirty(true);
-  // }
 
   {
     if (showEdit) {
@@ -435,9 +428,9 @@ function AuthorInfo() {
             id="author-name"
             className="text-xl font-semibold flex md:text-2xl"
           >
-            {author.fname} {author.lname}
+            {author?.fname} {author?.lname}
             <div className=" flex justify-center items-center text-xs px-2 text-gray-500 ml-2 md:ml-4 bg-white border border-slate-700 rounded-3xl my-auto h-6">
-              {author.role}
+              {author?.role}
             </div>
           </div>
           {author.id === auth.userInfo.id && (
@@ -452,7 +445,7 @@ function AuthorInfo() {
           id="author-username"
           className="text-sm text-gray-500 font-semibold md:text-sm"
         >
-          @{author.username}
+          @{author?.username}
         </div>
         <div id="author-bio" className="text-xs py-1 md:text-sm px-1">
           {author?.profile?.bio}
@@ -461,13 +454,13 @@ function AuthorInfo() {
         <div className="flex flex-wrap justify-between pt-2">
           <div className="flex flex-wrap items-center text-xs md:text-sm">
             <div className="mr-3 mb-2 inline-flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author._count.posts} Contributions
+              {author?._count.posts} Contributions
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author._count.comments} Comments
+              {author?._count.comments} Comments
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author._count.likes} Likes
+              {author?._count.likes} Likes
             </div>
           </div>
         </div>

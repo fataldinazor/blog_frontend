@@ -5,7 +5,6 @@ function Register() {
   const location = useLocation();
   return (
     <div>
-      {/* {console.log(location)} */}
       {location.pathname === "/register" && (
         <div id="register-choice" className="flex w-full flex-auto justify-between">
           <div id="user-register-link">

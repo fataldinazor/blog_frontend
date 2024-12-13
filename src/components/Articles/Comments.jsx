@@ -4,8 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { formatDate } from "../../utils/helper";
 
-function Comments() {
-  const [comments, setComments] = useState({});
+function Comments({comments, setComments}) {
+  // const [comments, setComments] = useState({});
   const [userComment, setUserComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState();
