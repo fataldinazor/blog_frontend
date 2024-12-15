@@ -1,58 +1,85 @@
 import { useEffect, useState } from "react";
-import { fetchComments, postUserComment } from "../../api/articleApi";
+import { fetchCommentsAPI, postUserCommentAPI } from "../../api/articleApi";
 import { useAuth } from "../../context/AuthContext";
 import { useParams } from "react-router-dom";
 import { formatDate } from "../../utils/helper";
+import toast from "react-hot-toast";
+import { Loading } from "../Loading";
 
-function Comments({comments, setComments}) {
-  // const [comments, setComments] = useState({});
+function Comments({ comments, setComments }) {
   const [userComment, setUserComment] = useState("");
-  const [reload, setReload] = useState();
+  const [isLoading, setIsLoading] = useState(false);
   const { auth } = useAuth();
   const params = useParams();
-  const [loading, setLoading] = useState(true);
-  const [isDropDownOpen, setIsDropDown] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
+      // setIsLoading(true)
       try {
-        const result = await fetchComments(auth.token, params.articleId);
-        setComments(result);
+        const result = await fetchCommentsAPI(auth.token, params.articleId);
+        if (!result.success) {
+          toast.error(result.msg);
+        } else {
+          setComments(result.comments);
+        }
       } catch (error) {
         console.log("Error from backend", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchData();
-    setLoading(false);
-    setReload(false);
-  }, [params.articleId, reload]);
+    // setIsLoading(true);
+    // setTimeout(() => {
+      fetchData();
+    // }, 5000);
+  }, [params.articleId]);
 
+  //trying to use optimistic UI here
   async function handleSubmit(event) {
     event.preventDefault();
+    const commentText = userComment;
     setUserComment("");
-    const result = await postUserComment(
-      auth.token,
-      params.articleId,
-      userComment
-    );
-    console.log(result);
-    setLoading(true);
-    setReload(true);
+    const tempCommentId = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 8)}`;
+    const tempComment = {
+      id: tempCommentId,
+      text: commentText,
+      updatedAt: new Date().toISOString(),
+      user: {
+        username: auth.userInfo.username,
+        role: auth.userInfo.role,
+      },
+    };
+    setComments([...comments, tempComment]);
+    try {
+      const result = await postUserCommentAPI(
+        auth.token,
+        params.articleId,
+        commentText
+      );
+      if (!result.success) {
+        setComments((prevComments) =>
+          prevComments.filter((c) => c.id !== tempCommentId)
+        );
+        toast.error(result.msg);
+      }
+    } catch (error) {
+      setComments((prevComments) =>
+        prevComments.filter((c) => c.id !== tempCommentId)
+      );
+      console.error("Failed to make request! ", error);
+    }
   }
-
-  const toggleDropDown = (commentId) => {
-    setIsDropDown((prevState) => ({
-      ...prevState,
-      [commentId]: !prevState[commentId],
-    }));
-  };
 
   return (
     <div className="px-10 lg:mb-16">
       <section className="bg-white py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold text-gray-900">{`Discussions (${comments.length})`}</h2>
+            <h2 className="text-3xl font-bold text-gray-900">{`Discussions (${
+              comments.length || 0
+            })`}</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="mb-6">
@@ -74,8 +101,11 @@ function Comments({comments, setComments}) {
               Post comment
             </button>
           </form>
-
-          {comments.length ? (
+          {isLoading ? (
+            <div className="w-full border border-gray-200 rounded">
+              <Loading color="black" height={50} width={50} />
+            </div>
+          ) : comments.length ? (
             comments.map((comment) => (
               <article
                 key={comment.id}
@@ -97,21 +127,6 @@ function Comments({comments, setComments}) {
                       </p>
                     </div>
                   </div>
-                  {/* <div>
-                    <button
-                      className="inline-flex items-center p-2 text-sm text-gray-500 bg-gray-200 rounded-full hover:bg-gray-300"
-                      onClick={() => toggleDropDown(comment.id)}
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M5 10a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
-                      </svg>
-                    </button>
-                  </div> */}
                 </footer>
                 <p className="text-gray-700">{comment.text}</p>
               </article>

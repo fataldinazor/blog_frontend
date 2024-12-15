@@ -4,7 +4,7 @@ const apiUrl = config.apiUrl;
 const { cloudName, avatarPresetName } = config;
 
 // uploading image to Cloudinary and generating a link to store in imageUrl
-const uploadToCloudinary = async (image) => {
+const uploadToCloudinaryAPI = async (image) => {
   const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
   try {
     const formData = new FormData();
@@ -15,15 +15,22 @@ const uploadToCloudinary = async (image) => {
       method: "POST",
       body: formData,
     });
+    if (!response.ok) {
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't upload to Cloudinary",
+      };
+      return errorMessage;
+    }
     const result = await response.json();
-    return result.secure_url;
+    return { success: true, image_url: result.secure_url };
   } catch (error) {
     console.error("Error occured while uploading to cloudinary", error);
-    return null;
+    return { success: false, networkError:true, msg: "Failed to connect to Cloudinary server, Please check your internet connection" };
   }
 };
 
-const updateAuthorPage = async (formValues, token, authorId) => {
+const updateAuthorPageAPI = async (formValues, token, authorId) => {
   console.log(formValues);
   const url = `${apiUrl}users/${authorId}`;
   try {
@@ -35,16 +42,25 @@ const updateAuthorPage = async (formValues, token, authorId) => {
       },
       body: JSON.stringify(formValues),
     });
-    if(!response.ok){
-      throw new Error(`HTTP error occured`)
+    if (!response.ok) {
+      const errorMessage = {
+        success: false,
+        msg: "Profile couldn't be updated",
+      };
+      return errorMessage;
     }
     return await response.json();
   } catch (error) {
-    console.log("Error Occured"+ error);
+    console.log("Error Occured" + error);
+    return {
+      success: false,
+      networkError: true,
+      msg: "Unable to connect to the server. Please check your internet connection.",
+    };
   }
 };
 
-const fetchArticles = async (articleType, userToken, authorId) => {
+const fetchAuthorArticlesAPI = async (articleType, userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}/posts/${articleType}`;
   try {
     const response = await fetch(url, {
@@ -52,38 +68,39 @@ const fetchArticles = async (articleType, userToken, authorId) => {
         Authorization: `Bearer ${userToken}`,
       },
     });
-    if (!response.ok) {
-      return await response.json();
-    }
     const result = await response.json();
     return result;
   } catch (error) {
-    console.log("Error occured from backend" + error);
-    return [];
+    console.log(error);
+    return {
+      success: false,
+      networkError: true,
+      msg: "Unable to connect to the server. Please check your internet connection.",
+    };
   }
 };
 
-const fetchBookmarkedPostsAPI=async(userToken, authorId)=>{
-  const url=`${apiUrl}users/${authorId}/posts/bookmarks`;
+const fetchBookmarkedPostsAPI = async (userToken, authorId) => {
+  const url = `${apiUrl}users/${authorId}/posts/bookmarks`;
   try {
-    const response = await fetch(url,{
-      headers:{
-        Authorization: `Bearer ${userToken}`
-      }
-    })
-    if(!response.ok){
-      const errorMessage = await response.json();
-      return errorMessage
-    }
-    const result= await response.json();
-    console.log(result)
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
+    const result = await response.json();
     return result;
   } catch (error) {
-    return {msg:"Network Error", error}
+        console.log("Error Occured" + error);
+        return {
+          success: false,
+          networkError: true,
+          msg: "Unable to connect to the server. Please check your internet connection.",
+        };
   }
-}
+};
 
-const fetchAuthorDetails = async (userToken, authorId) => {
+const fetchAuthorDetailsAPI = async (userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}`;
   try {
     const response = await fetch(url, {
@@ -92,19 +109,27 @@ const fetchAuthorDetails = async (userToken, authorId) => {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status:${response.status}`);
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't fetch author details",
+      };
+      return errorMessage;
     }
     return await response.json();
   } catch (error) {
-    console.log("Error from the backend" + error);
-    return {};
+    console.log("Error Occured" + error);
+    return {
+      success: false,
+      networkError: true,
+      msg: "Unable to connect to the server. Please check your internet connection.",
+    };
   }
 };
 
 export {
-  fetchArticles,
-  fetchAuthorDetails,
-  uploadToCloudinary,
-  updateAuthorPage,
-  fetchBookmarkedPostsAPI
+  uploadToCloudinaryAPI,
+  fetchAuthorArticlesAPI,
+  fetchAuthorDetailsAPI,
+  updateAuthorPageAPI,
+  fetchBookmarkedPostsAPI,
 };

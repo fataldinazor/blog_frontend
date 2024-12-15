@@ -10,8 +10,34 @@ import {
 import { fetchHomepageArticles } from "../../api/homepage";
 import { Link } from "react-router-dom";
 import { BlogIcon } from "@/assets/Icons";
+import { Loading } from "../Loading";
 
-export function CarouselSize({ articles }) {
+export function CarouselSize() {
+  const [articles, setArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const posts = await fetchHomepageArticles();
+        setArticles(posts);
+      } catch (error) {
+        console.log(`Couldn't fetch articles ${error}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    // setIsLoading(true);
+    // setTimeout(() => {
+      fetchData();
+    // }, 5000);
+  }, []);
+
+  if (isLoading) {
+    return <Loading color="white" height="50" width="50"/>;
+  }
+
   return (
     <Carousel className="w-2/3 max-w-sm md:max-w-screen-md lg:max-w-screen-lg">
       <CarouselContent className="-ml-1">
@@ -43,15 +69,13 @@ export function CarouselSize({ articles }) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="bg-black">
-      </CarouselPrevious>
-      <CarouselNext className="bg-black">
-      </CarouselNext>
+      <CarouselPrevious className="bg-black"></CarouselPrevious>
+      <CarouselNext className="bg-black"></CarouselNext>
     </Carousel>
   );
 }
 
-const HeroSection = ({ articles }) => {
+const HeroSection = () => {
   return (
     <section className="flex flex-col h-full items-center justify-center bg-black text-white overflow-hidden relative">
       {/* Background Image with Overlay */}
@@ -91,7 +115,7 @@ const HeroSection = ({ articles }) => {
             Featured Articles
           </h2>
           <div className="m-2 flex justify-center rounded-md">
-            <CarouselSize articles={articles} />
+            <CarouselSize />
           </div>
         </div>
       </div>
@@ -100,26 +124,9 @@ const HeroSection = ({ articles }) => {
 };
 
 const Homepage = () => {
-  const [articles, setArticles] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const posts = await fetchHomepageArticles();
-        setArticles(posts);
-        setIsLoading(false);
-      } catch (error) {
-        console.log(`Couldn't fetch articles ${error}`);
-      }
-    };
-    fetchData();
-  }, []);
-
   return (
     <div className="h-full flex flex-col">
-      {articles && articles.length && <HeroSection articles={articles} />}
+      <HeroSection />
     </div>
   );
 };

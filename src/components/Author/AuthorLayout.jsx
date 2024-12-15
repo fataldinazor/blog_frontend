@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, useParams } from "react-router-dom";
-import { TrashIcon, ModifyIcon, CrossIcon } from "../../assets/Icons";
+import { TrashIcon, ModifyIcon, CrossIcon } from "@/assets/Icons";
 import {
-  fetchAuthorDetails,
-  uploadToCloudinary,
-  updateAuthorPage,
-} from "../../api/authorApi";
-import { useAuth } from "../../context/AuthContext";
-import { Triangle } from "react-loader-spinner";
+  fetchAuthorDetailsAPI,
+  uploadToCloudinaryAPI,
+  updateAuthorPageAPI,
+} from "@/api/authorApi";
+import { useAuth } from "@/context/AuthContext";
+import { Loading, LoadingOverlay } from "../Loading";
+import toast from "react-hot-toast";
 
 function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
   const imageInputRef = useRef(null);
-
   const [image, setImage] = useState({
     file: null,
     imagePreview: author?.profile?.avatar_url || null,
@@ -61,20 +61,31 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
 
   async function handleAuthorInfo(image) {
     setIsSubmit(false);
-    let uploadedAvatarUrl = null;
+    let cloudinaryUpload = null;
     let updatedFormValues = { ...formValues };
 
     if (image.file) {
       try {
-        uploadedAvatarUrl = await uploadToCloudinary(image.file);
-        updatedFormValues.avatar_url = uploadedAvatarUrl;
-        updatedFormValues = {
-          ...updatedFormValues,
-          old_avatar_url: author?.profile?.avatar_url || null,
-        };
+        cloudinaryUpload = await uploadToCloudinaryAPI(image.file);
+        if(cloudinaryUpload.networkError){
+          toast.error(cloudinaryUpload.msg);
+          return;
+        }
+        if (!cloudinaryUpload.success) {
+          updatedFormValues={...updatedFormValues, old_avatar_url:null}
+          toast.error("Failed to upload image to Cloudinary, Try again later!")
+        } else {
+          updatedFormValues.avatar_url = cloudinaryUpload.image_url;
+          updatedFormValues = {
+            ...updatedFormValues,
+            old_avatar_url: author?.profile?.avatar_url || null,
+          };
+        }
         setFormValues(updatedFormValues);
       } catch (error) {
         console.error("Error uploading to Cloudinary", error);
+        updatedFormValues={...updatedFormValues, old_avatar_url:null}
+        toast.error("Failed to upload image to Cloudinary, Try again later!")
       }
     } else {
       if (author?.profile?.avatar_url !== null && image.imagePreview === null) {
@@ -96,15 +107,30 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
     }
 
     try {
-      await updateAuthorPage(updatedFormValues, auth.token, params.authorId);
-      console.log("update sucessfull");
+      const update = await updateAuthorPageAPI(
+        updatedFormValues,
+        auth.token,
+        params.authorId
+      );
+      console.log(update);
+      if(update.networkError){
+        toast.error(update.msg);
+        return;
+      }
+      if (!update.success) {
+        toast.error(update.msg);
+      } else {
+        toast.success(update.msg);
+      }
+      // console.log("update sucessfull");
     } catch (error) {
       console.log(`Error updating author info`, error);
+    } finally {
+      setIsLoading(false);
+      setShowEdit(false);
+      setAuthor(null);
+      URL.revokeObjectURL(image.imagePreview);
     }
-    URL.revokeObjectURL(image.imagePreview);
-    setShowEdit(false);
-    setIsLoading(false);
-    setAuthor(null);
   }
 
   //handling changes when formValues enetered
@@ -217,19 +243,7 @@ function EditBox({ author, showEdit, setShowEdit, setAuthor }) {
             className={`z-20 h-auto min-w-80 max-w-screen-md p-4 rounded-lg mx-auto block`}
           >
             <div className="modal-box">
-              {isLoading && (
-                <div className="absolute inset-0 bg-white rounded-lg bg-opacity-90 z-30 flex items-center justify-center">
-                  <span className="text-lg font-semibold text-black">
-                    <Triangle
-                      visible={true}
-                      height="40"
-                      width="40"
-                      color="#000000"
-                      ariaLabel="triangle-loading"
-                    />
-                  </span>
-                </div>
-              )}
+              {isLoading && <LoadingOverlay />}
               <div className="flex justify-between">
                 <h3 className="font-bold text-lg">Edit Profile</h3>
                 <button className="btn" onClick={handleCloseForm}>
@@ -365,13 +379,19 @@ function AuthorInfo() {
   //fetching when author is null (initially and after updation)
   useEffect(() => {
     if (author === null && !isLoading) {
-      setIsLoading(true);
       const fetchData = async () => {
+        setIsLoading(true);
         try {
-          const result = await fetchAuthorDetails(auth.token, params.authorId);
-          // console.log(result);
-          if (result) {
-            setAuthor(result);
+          const result = await fetchAuthorDetailsAPI(auth.token, params.authorId);
+          if(result.networkError){
+            toast.error(result.msg);
+            setIsLoading(false);
+            return;
+          }
+          if(!result.success){
+            toast.error(result.msg);
+          }else{
+            setAuthor(result.authorInfo);
           }
         } catch (error) {
           console.log("Error" + error);
@@ -379,27 +399,22 @@ function AuthorInfo() {
           setIsLoading(false);
         }
       };
-      setTimeout(() => {
-        fetchData();
-      }, 2000);
+      // setIsLoading(true);
+      // setTimeout(() => {
+      fetchData();
+      // }, 2000);
     }
   }, [author, params.authorId, auth.token]);
 
-  if (isLoading) {
+  if (isLoading || author === null) {
     return (
-      <div className="flex justify-center items-center h-48">
-        <Triangle
-          visible={true}
-          height="40"
-          width="40"
-          color="#000000"
-          ariaLabel="triangle-loading"
-        />
+      <div className="h-48">
+        <Loading width="50" height="50" color="black" />
       </div>
     );
   }
 
-  return author ? (
+  return (
     <div
       id="author-info"
       className="max-w-3xl min-w-96 mx-auto px-2 py-4 grid grid-cols-4"
@@ -445,31 +460,27 @@ function AuthorInfo() {
           id="author-username"
           className="text-sm text-gray-500 font-semibold md:text-sm"
         >
-          @{author?.username}
+          @{author?.username || "username"}
         </div>
         <div id="author-bio" className="text-xs py-1 md:text-sm px-1">
-          {author?.profile?.bio}
+          {author?.profile?.bio || ""}
         </div>
 
         <div className="flex flex-wrap justify-between pt-2">
           <div className="flex flex-wrap items-center text-xs md:text-sm">
             <div className="mr-3 mb-2 inline-flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author?._count.posts} Contributions
+              {author?._count?.posts|| 0} Contributions
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author?._count.comments} Comments
+              {author?._count?.comments || 0} Comments
             </div>
             <div className="mr-3 mb-2 inline-flex items-center justify-center text-secondary-inverse rounded-full bg-neutral-100 hover:bg-neutral-200 transition-all duration-200 ease-in-out px-3 py-1 font-medium leading-normal">
-              {author?._count.likes} Likes
+              {author?._count?.likes || 0} Likes
             </div>
           </div>
         </div>
       </div>
     </div>
-  ) : (
-    <h2 className="h-28 flex justify-center items-center">
-      Failed to fetch the profile
-    </h2>
   );
 }
 

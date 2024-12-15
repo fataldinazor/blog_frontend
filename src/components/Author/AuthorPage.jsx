@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { fetchArticles, fetchBookmarkedPostsAPI } from "@/api/authorApi";
+import {
+  fetchAuthorArticlesAPI,
+  fetchBookmarkedPostsAPI,
+} from "@/api/authorApi";
 import { formatDate } from "@/utils/helper";
 import { BlogIcon, OptionIcon } from "@/assets/Icons";
-import { Triangle } from "react-loader-spinner";
-// import ArticleId from "../Articles/ArticleId";
+// import { Triangle } from "react-loader-spinner";
+import { Loading } from "../Loading";
 import NotAuthorized from "../Error/AuthorizeError";
 import toast from "react-hot-toast";
 
@@ -125,7 +128,7 @@ function AuthorArticles({ tab }) {
 
       if (tab === "published") {
         fetchFunction = () =>
-          fetchArticles("published", auth.token, params.authorId);
+          fetchAuthorArticlesAPI("published", auth.token, params.authorId);
         cacheKey = "published";
       } else if (tab === "unpublished") {
         if (auth.userInfo.id !== parseInt(params.authorId)) {
@@ -133,7 +136,7 @@ function AuthorArticles({ tab }) {
           return;
         }
         fetchFunction = () =>
-          fetchArticles("unpublished", auth.token, params.authorId);
+          fetchAuthorArticlesAPI("unpublished", auth.token, params.authorId);
         cacheKey = "unpublished";
       } else if (tab === "bookmarks") {
         if (auth.userInfo.id !== parseInt(params.authorId)) {
@@ -152,7 +155,11 @@ function AuthorArticles({ tab }) {
         setIsLoading(true);
         try {
           const result = await fetchFunction();
-          console.log(result.posts);
+          // console.log(result.posts);
+          if (result.networkError) {
+            toast.error(result.msg);
+            return;
+          }
           if (result.success) {
             setArticles(result.posts);
             setCachedArticles((prevValue) => ({
@@ -169,20 +176,16 @@ function AuthorArticles({ tab }) {
         }
       }
     };
-    setIsLoading(true);
-    fetchData();
+    // setIsLoading(true);
+    // setTimeout(() => {
+      fetchData();
+    // }, 2000);
   }, [tab, params.authorId, auth.token, cachedArticles]);
 
   if (isLoading) {
     return (
       <div className="h-96 flex justify-center items-center">
-        <Triangle
-          visible={true}
-          height="40"
-          width="40"
-          color="#000000"
-          ariaLabel="triangle-loading"
-        />
+        <Loading color="black" height="40" width="40" />
       </div>
     );
   }
@@ -269,8 +272,6 @@ function AuthorPage() {
           setSearchParams={setSearchParams}
           tab={tab}
         />
-        {/* {tab === "bookmarks" && <AuthorBookmarks />} */}
-        {/* {tab !== "bookmarks" && <AuthorArticles tab={tab} />} */}
         <AuthorArticles tab={tab} />
       </div>
     </div>

@@ -20,7 +20,32 @@ const uploadToCloudinary = async (image) => {
   }
 };
 
-const fetchAllPublishedArticles = async (userToken) => {
+const createNewArticleAPI = async (userToken, formValues) => {
+  const url = `${apiUrl}posts/`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    });
+    if (!response.ok) {
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't create the Article, Try again later",
+      };
+      return errorMessage;
+    }
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error Occurred", error);
+  }
+};
+
+const fetchAllPublishedArticlesAPI = async (userToken) => {
   try {
     const url = `${apiUrl}posts`;
     const response = await fetch(url, {
@@ -29,18 +54,20 @@ const fetchAllPublishedArticles = async (userToken) => {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't Fetch the Articles",
+      };
+      return errorMessage;
     }
     const result = await response.json();
-    // console.log(result)
     return result;
   } catch (error) {
-    console.log("Error Occured from backend: ", error);
-    return [];
+    console.log("Network Error: ", error);
   }
 };
 
-const fetchTopAuthors = async (userToken) => {
+const fetchTopAuthorsAPI = async (userToken) => {
   const url = `${apiUrl}posts/authors/top`;
   try {
     const response = await fetch(url, {
@@ -49,7 +76,11 @@ const fetchTopAuthors = async (userToken) => {
       },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't Fetch the Top Contributers",
+      };
+      return errorMessage;
     }
     return await response.json();
   } catch (error) {
@@ -57,17 +88,24 @@ const fetchTopAuthors = async (userToken) => {
   }
 };
 
-const fetchArticleWithId = async (userToken, articleId) => {
+const fetchArticleWithIdAPI = async (userToken, articleId) => {
   const url = `${apiUrl}posts/${articleId}`;
   try {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${userToken}` },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.status === 404) {
+        const errorMessage = await response.json();
+        return errorMessage;
+      }
+      const errorMessage = {
+        success: false,
+        msg: "Couldn't fetch the Article",
+      };
+      return errorMessage;
     }
     const result = await response.json();
-    // console.log(result);
     return result;
   } catch (error) {
     console.log("Error occured from backend: " + error);
@@ -95,14 +133,15 @@ const updateArticleWithId = async (userToken, articleId, formValues) => {
   }
 };
 
-const fetchMoreArticles = async (userToken, articleId) => {
+const fetchMoreArticlesAPI = async (userToken, articleId) => {
   try {
     const url = `${apiUrl}posts/${articleId}/more-posts`;
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${userToken}` },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorMessage={success:false, msg:"Couldn't fetch articles"};
+      return errorMessage
     }
     const result = await response.json();
     return result;
@@ -111,14 +150,16 @@ const fetchMoreArticles = async (userToken, articleId) => {
   }
 };
 
-const fetchComments = async (userToken, articleId) => {
+const fetchCommentsAPI = async (userToken, articleId) => {
   try {
     const url = `${apiUrl}posts/${articleId}/comments`;
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${userToken}` },
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // throw new Error(`HTTP error! status: ${response.status}`);
+      const errorMessage={success:false, msg:"Couldn't fetch the comments"};
+      return errorMessage
     }
     const result = await response.json();
     return result;
@@ -127,9 +168,8 @@ const fetchComments = async (userToken, articleId) => {
   }
 };
 
-const postUserComment = async (userToken, articleId, userComment) => {
+const postUserCommentAPI = async (userToken, articleId, userComment) => {
   try {
-    // console.log(userComment, userToken, articleId)
     const url = `${apiUrl}posts/${articleId}/comments`;
     const response = await fetch(url, {
       method: "POST",
@@ -139,6 +179,10 @@ const postUserComment = async (userToken, articleId, userComment) => {
       },
       body: JSON.stringify({ userComment: userComment }),
     });
+    if(!response.ok){
+      const errorMessage={success:false, msg:"Couldn't Post your Comment"};
+      return errorMessage;
+    }
     const result = await response.json();
     return result;
   } catch (error) {
@@ -148,7 +192,7 @@ const postUserComment = async (userToken, articleId, userComment) => {
 
 //2 requests for checking if the article opened is liked/bookmarked by the user
 // returns 2 bool values
-const UserLikedBookmarkPost = async (userToken, articleId) => {
+const UserLikedBookmarkPostAPI = async (userToken, articleId) => {
   try {
     const urls = [
       `${apiUrl}posts/${articleId}/likes`,
@@ -161,7 +205,8 @@ const UserLikedBookmarkPost = async (userToken, articleId) => {
         },
       });
       if (!response.ok) {
-        throw new Error(`Failed to fetch from ${url}`);
+        const errorMessage={success:false, msg:"Couldn't fetch User Like/Bookmark"}
+        return errorMessage;
       }
       return response.json();
     });
@@ -175,7 +220,7 @@ const UserLikedBookmarkPost = async (userToken, articleId) => {
   }
 };
 
-const handleLike = async (userToken, articleId) => {
+const handleLikeAPI = async (userToken, articleId) => {
   const url = `${apiUrl}posts/${articleId}/likes`;
   try {
     const response = await fetch(url, {
@@ -184,14 +229,21 @@ const handleLike = async (userToken, articleId) => {
         Authorization: `Bearer ${userToken}`,
       },
     });
-    if (!response.ok) throw new Error(`Failed to connect with backend`);
+    // if (!response.ok) throw new Error(`Failed to connect with backend`);
+    if (!response.ok) {
+      const errorMessage = {
+        success: false,
+        msg: "Failed to perform like action",
+      };
+      return errorMessage;
+    }
     return await response.json();
   } catch (error) {
     console.error(`Error occured from Backend ${error}`);
   }
 };
 
-const handleBookmark = async (userToken, articleId) => {
+const handleBookmarkAPI = async (userToken, articleId) => {
   const url = `${apiUrl}posts/${articleId}/bookmarks`;
   const options = {
     method: "POST",
@@ -200,7 +252,11 @@ const handleBookmark = async (userToken, articleId) => {
   try {
     const response = await fetch(url, options);
     if (!response.ok) {
-      throw new Error(`Unable to connect with backend`);
+      const errorMessage = {
+        success: false,
+        msg: "Failed to perform Bookmark action",
+      };
+      return errorMessage;
     }
     return await response.json();
   } catch (error) {
@@ -208,13 +264,16 @@ const handleBookmark = async (userToken, articleId) => {
   }
 };
 
-const deletePostWithId = async (userToken, articleId) => {
-  console.log(userToken, articleId);
+const deletePostWithId = async (userToken, articleId, imageUrl) => {
   const url = `${apiUrl}posts/${articleId}`;
   try {
     const response = await fetch(url, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${userToken}` },
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image_url: imageUrl }),
     });
     if (!response.ok) {
       throw new Error(`Failed to Delete the post`);
@@ -227,15 +286,16 @@ const deletePostWithId = async (userToken, articleId) => {
 
 export {
   uploadToCloudinary,
-  fetchAllPublishedArticles,
-  fetchArticleWithId,
+  fetchAllPublishedArticlesAPI,
+  fetchArticleWithIdAPI,
   updateArticleWithId,
-  fetchMoreArticles,
-  fetchComments,
-  postUserComment,
-  UserLikedBookmarkPost,
-  handleLike,
-  handleBookmark,
-  fetchTopAuthors,
+  createNewArticleAPI,
+  fetchMoreArticlesAPI,
+  fetchCommentsAPI,
+  postUserCommentAPI,
+  UserLikedBookmarkPostAPI,
+  handleLikeAPI,
+  handleBookmarkAPI,
+  fetchTopAuthorsAPI,
   deletePostWithId,
 };

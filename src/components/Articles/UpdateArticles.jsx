@@ -1,13 +1,19 @@
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchArticleWithId, updateArticleWithId, deletePostWithId } from "../../api/articleApi";
+import {
+  fetchArticleWithIdAPI,
+  updateArticleWithId,
+  deletePostWithId,
+} from "@/api/articleApi";
 import AuthorizeError from "../Error/AuthorizeError";
 import { Editor } from "@tinymce/tinymce-react";
-import config from "../../config";
-import { Triangle } from "react-loader-spinner";
-import { TrashIcon, ModifyIcon } from "../../assets/Icons";
-import { uploadToCloudinary } from "../../api/articleApi";
+import config from "@/config";
+// import { Triangle } from "react-loader-spinner";
+import { TrashIcon, ModifyIcon } from "@/assets/Icons";
+import { uploadToCloudinary } from "@/api/articleApi";
+import { LoadingOverlay } from "../Loading";
+import toast from "react-hot-toast";
 
 function UpdateArticles() {
   const { auth } = useAuth();
@@ -30,7 +36,7 @@ function UpdateArticles() {
   const [isSubmit, setIsSubmit] = useState(false);
   const [isImageDirty, setIsImageDirty] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
-  const [isConfirmationVisible, setIsConfirmationVisible]=useState(false);
+  const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const imageInputRef = useRef(null);
   const editorRef = useRef();
   const { tinymceKey } = config;
@@ -38,38 +44,49 @@ function UpdateArticles() {
 
   //fetching data on mount
   useEffect(() => {
-    setIsLoading(true);
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const result = await fetchArticleWithId(auth.token, params.articleId);
-        if (result.user.id !== auth.userInfo.id) {
-          setIsLoading(false);
-          setIsAuthorized(false);
-          return;
+        const result = await fetchArticleWithIdAPI(
+          auth.token,
+          params.articleId
+        );
+        if (!result.success) {
+          if(result.status===404){
+            navigate("/404")
+            toast.error(result.msg)
+          }else {
+            toast.error(result.msg);
+          }
+        } else {
+          if (result.post?.user.id !== auth.userInfo.id) {
+            setIsLoading(false);
+            setIsAuthorized(false);
+            return;
+          }
+          setArticle(result.post);
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            image_url: result.post?.image_url || null,
+            title: result.post.title,
+            content: result.post.content,
+          }));
+          setImage((prevValues) => ({
+            ...prevValues,
+            imagePreview: result.post?.image_url || null,
+          }));
         }
-        console.log(result);
-        setArticle(result);
-        setFormValues((prevValues) => ({
-          ...prevValues,
-          image_url: result?.image_url || null,
-          title: result.title,
-          content: result.content,
-        }));
-        setImage((prevValues) => ({
-          ...prevValues,
-          imagePreview: result?.image_url || null,
-        }));
         // console.log(formValues);
       } catch (error) {
         console.log(`Error occured ${error}`);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
-
-    setIsLoading(false);
   }, [params.authorId, auth.token]);
 
-  // useEffect(() => console.log(editorRef.current), [editorRef.current]);
+  //checking conditons being fullfilled before submission
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
       setIsLoading(true);
@@ -77,6 +94,15 @@ function UpdateArticles() {
     }
   }, [formErrors, isSubmit]);
 
+  useEffect(() => {
+    if (image.imagePreview) {
+      const prevImagePreview = image.imagePreview;
+      //unmounting cleanup function when image Preview is changed
+      return () => URL.revokeObjectURL(prevImagePreview);
+    }
+  }, [image.imagePreview]);
+
+  //handling values before sending values to backend
   async function handleFormValuesForUpdation() {
     setIsSubmit(false);
     let updatedFormValues = { ...formValues };
@@ -110,7 +136,9 @@ function UpdateArticles() {
     } else {
       updatedFormValues = { ...updatedFormValues, old_image_url: null };
     }
+    // setIsLoading(true);
     await updateArticleWithId(auth.token, params.articleId, updatedFormValues);
+    setIsLoading(false);
     navigate(`/articles/${params.articleId}`);
   }
 
@@ -224,20 +252,22 @@ function UpdateArticles() {
     // setIsFormDirty(true);
   }
 
+  // showing the delete confirmation modal
   function handleDelete() {
-    // deletePostWithid(params.articleId);
     setIsConfirmationVisible(true);
   }
 
-  async function confirmDelete(){
+  // confirming to delete
+  async function confirmDelete() {
     setIsConfirmationVisible(false);
     setIsLoading(true);
-    await deletePostWithId(auth.token, params.articleId);
+    await deletePostWithId(auth.token, params.articleId, article.image_url);
     setIsLoading(false);
     navigate(`/author/${auth.userInfo.id}`);
   }
 
-  function cancelDelete(){
+  //if confirmation to delete cancelled
+  function cancelDelete() {
     setIsConfirmationVisible(false);
   }
 
@@ -246,19 +276,7 @@ function UpdateArticles() {
   }
 
   if (isLoading) {
-    return (
-      <div className="absolute inset-0 bg-white rounded-lg bg-opacity-90 z-30 flex items-center justify-center">
-        <span className="text-lg font-semibold text-black">
-          <Triangle
-            visible={true}
-            height="40"
-            width="40"
-            color="#000000"
-            ariaLabel="triangle-loading"
-          />
-        </span>
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   return (
@@ -322,7 +340,7 @@ function UpdateArticles() {
             id="new-post-title"
             name="title"
             onChange={handleChange}
-            value={formValues.title ||""}
+            value={formValues.title || ""}
             rows={2}
             cols={35}
             className="text-xl md:text-3xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"

@@ -4,10 +4,10 @@ import { Toaster } from "react-hot-toast";
 
 function Root() {
   return (
-    <div className="root-component h-screen flex flex-col">
+    <div className="root-component h-full flex flex-col">
       <Toaster position="botton-center"/>
       <Header />
-      <Outlet />
+      <Outlet/>
     </div>
   );
 }

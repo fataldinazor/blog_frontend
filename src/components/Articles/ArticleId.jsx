@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect, useState, useRef } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  fetchArticleWithId,
-  fetchMoreArticles,
-  UserLikedBookmarkPost,
-  handleLike,
-  handleBookmark,
+  fetchArticleWithIdAPI,
+  fetchMoreArticlesAPI,
+  UserLikedBookmarkPostAPI,
+  handleLikeAPI,
+  handleBookmarkAPI,
 } from "@/api/articleApi";
 import { useAuth } from "@/context/AuthContext";
 import { truncateString } from "@/utils/helper";
@@ -16,8 +16,8 @@ import {
   CommentIcon,
   ShareIcon,
 } from "@/assets/Icons";
-import { Triangle } from "react-loader-spinner";
 import toast from "react-hot-toast";
+import { Loading, LoadingOverlay } from "../Loading";
 
 const Comments = lazy(() => import("./Comments"));
 
@@ -30,13 +30,19 @@ function MoreArticles() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const result = await fetchMoreArticles(auth.token, params.articleId);
-        if (result.length > 6) randomizeArticles(result);
-        else if (result.length > 0 && result.length <= 6)
-          setMoreArticles[result];
-        else {
-          console.log("No Articles available to show right now");
+        const result = await fetchMoreArticlesAPI(auth.token, params.articleId);
+        if (!result.success) {
+          toast.error(result.msg);
+        } else {
+          if (result.posts.length > 6) {
+            randomizeArticles(result.posts);
+          } else if (result.posts.length > 0) {
+            setMoreArticles(result.posts);
+          } else {
+            console.log("No Articles available to show right now");
+          }
         }
       } catch (error) {
         console.log("error occured" + error);
@@ -44,9 +50,9 @@ function MoreArticles() {
         setIsLoading(false);
       }
     };
-    setTimeout(() => {
-      fetchData();
-    }, 5000);
+    // setTimeout(() => {
+    fetchData();
+    // }, 5000);
   }, [auth.token, params.articleId]);
 
   function randomizeArticles(moreArticles) {
@@ -64,24 +70,18 @@ function MoreArticles() {
 
   return (
     <div id="more-articles-container" className="rounded-lg pb-3">
-      <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2">
+      <h1 className="text-2xl mt-4 md:mt-0 md:text-xl lg:text-2xl font-bold pb-2 mb-2 text-center">
         Suggested Reads →
       </h1>
 
       {isLoading ? (
-        <div className="h-96 flex justify-center items-center">
-          <Triangle
-            visible={true}
-            height="40"
-            width="40"
-            color="#000000"
-            ariaLabel="triangle-loading"
-          />
+        <div className="h-screen flex justify-center items-center border border-gray-200 rounded-md">
+          <Loading height="50" width="50" color="black" />
         </div>
       ) : (
         <div
           id="more-article-cards"
-          className="grid grid-cols-2 md:mx-5 lg:mx-0 lg:flex lg:flex-col gap-4"
+          className="grid grid-cols-1 mx-10 md:grid-cols-2 md:mx-5 lg:mx-0 lg:flex lg:flex-col gap-4"
         >
           {moreArticles.length > 0 ? (
             moreArticles.map((article) => (
@@ -255,21 +255,33 @@ function PostInteraction({ counts, commentRef, comments }) {
   // fetching counts of likes, bookmarks, comments
   useEffect(() => {
     if (counts) {
-      setLikesCount(counts.likes);
-      setBookmarkCount(counts.bookmarks);
-      setCommentCount(counts.comments);
+      setLikesCount(counts.likes || 0);
+      setBookmarkCount(counts.bookmarks || 0);
+      setCommentCount(counts.comments || 0);
     }
   }, [counts]);
 
   // fetching if the logged user has liked and bookmarked the post or not
   useEffect(() => {
     const fetchData = async () => {
-      const result = await UserLikedBookmarkPost(auth.token, params.articleId);
-      setIsLiked(result.liked);
-      setIsBookmarked(result.bookmarked);
+      const result = await UserLikedBookmarkPostAPI(
+        auth.token,
+        params.articleId
+      );
+      if (result.liked === undefined && result.bookmarked === undefined) {
+        toast.error("Couldn't fetch user like/bookmark for the post");
+      } else if (result.bookmarked === undefined) {
+        toast.error("Couldn't fetch user bookmark for the post");
+        setIsLiked(result?.liked);
+      } else if (result.liked === undefined) {
+        toast.error("Couldn't fetch user like for the post");
+        setIsBookmarked(result?.bookmarked);
+      } else {
+        setIsLiked(result?.liked);
+        setIsBookmarked(result?.bookmarked);
+      }
     };
     fetchData();
-    // console.log(likesCount, bookmarkCount, isLiked, isBookmarked, commentCount);
   }, [params.articleId, auth.token]);
 
   // scrolling to the comment section
@@ -301,11 +313,12 @@ function PostInteraction({ counts, commentRef, comments }) {
       setLikesCount((prevCount) => (isLiked ? prevCount + 1 : prevCount - 1));
     };
     try {
-      const result = await handleLike(auth.token, params.articleId);
-      if (!result) {
-        // toast.error("Couldn't Like the Post")
-        // handle error here
-        // alert("Something went wrong. Couldn't like the Post")
+      const result = await handleLikeAPI(auth.token, params.articleId);
+      if (!result.success) {
+        toast.error(result.msg);
+        rollback(previousState);
+      } else {
+        toast.success(result.msg);
       }
     } catch (error) {
       rollback(previousState);
@@ -328,10 +341,12 @@ function PostInteraction({ counts, commentRef, comments }) {
       );
     };
     try {
-      const result = await handleBookmark(auth.token, params.articleId);
-      // throw new Error("some error");
-      if (!result) {
+      const result = await handleBookmarkAPI(auth.token, params.articleId);
+      if (!result.success) {
+        toast.error(result.msg);
         rollback(previousState);
+      } else {
+        toast.success(result.msg);
       }
     } catch (error) {
       rollback(previousState);
@@ -384,7 +399,7 @@ function PostInteraction({ counts, commentRef, comments }) {
 
 //article component
 function ArticleId() {
-  const [article, setArticle] = useState({});
+  const [article, setArticle] = useState([]);
   const [user, setUser] = useState({});
   const [showCommentsComponent, setShowCommentsComponent] = useState(false);
   const commentComponentRef = useRef();
@@ -392,15 +407,31 @@ function ArticleId() {
   const [isLoading, setIsLoading] = useState(true);
   const [comments, setComments] = useState({});
   const params = useParams();
+  const navigate = useNavigate();
 
   //fetching the article with id
   useEffect(() => {
     // window.scrollTo(0, 0);
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const result = await fetchArticleWithId(auth.token, params.articleId);
-        setArticle(result);
-        setUser(result.user);
+        const result = await fetchArticleWithIdAPI(
+          auth.token,
+          params.articleId
+        );
+        if (!result.success) {
+          if (result.status === 404) {
+            // redirecting to 404 page
+            toast.error(result.msg);
+            setIsLoading(false);
+            navigate("/404");
+          } else {
+            toast.error(result.msg);
+          }
+        } else {
+          setArticle(result.post);
+          setUser(result.post?.user);
+        }
       } catch (error) {
         console.error("Failed to fetch articles", error);
       } finally {
@@ -438,17 +469,7 @@ function ArticleId() {
   }, [commentComponentRef, params.articleId]);
 
   if (isLoading) {
-    return (
-      <div className="h-96 flex justify-center items-center">
-        <Triangle
-          visible={true}
-          height="40"
-          width="40"
-          color="#000000"
-          ariaLabel="triangle-loading"
-        />
-      </div>
-    );
+    return <LoadingOverlay />;
   }
 
   return (
@@ -476,15 +497,7 @@ function ArticleId() {
             <div ref={commentComponentRef} className="min-h-40">
               {showCommentsComponent && (
                 <Suspense
-                  fallback={
-                    <Triangle
-                      visible={true}
-                      height="40"
-                      width="40"
-                      color="#000000"
-                      ariaLabel="triangle-loading"
-                    />
-                  }
+                  fallback={<Loading height="30" width="30" color="black" />}
                 >
                   <Comments comments={comments} setComments={setComments} />
                 </Suspense>

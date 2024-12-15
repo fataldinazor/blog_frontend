@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { Editor } from "@tinymce/tinymce-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import config from "../../config";
-import {TrashIcon} from "../../assets/Icons"
-import { uploadToCloudinary } from "../../api/articleApi";
+import config from "@/config";
+import { TrashIcon } from "@/assets/Icons";
+import { uploadToCloudinary, createNewArticleAPI } from "@/api/articleApi";
+import toast from "react-hot-toast";
+import { LoadingOverlay } from "../Loading";
 
 function CreateArticles() {
   const { auth } = useAuth();
@@ -16,14 +18,15 @@ function CreateArticles() {
   });
   const editorRef = useRef(null);
   const [formErrors, setFormErrors] = useState({});
-  //conatains the file 
+  //conatains the file
   const [image, setImage] = useState(null);
   //contains the url of the file for showing to ther user
   const [imagePreview, setImagePreview] = useState("");
   const [imageErrors, setImageErrors] = useState("");
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
-  const { apiUrl, tinymceKey } = config;
+  const { tinymceKey } = config;
+  const [isLoading, setIsLoading] = useState(false);
 
   //checks for clearing of the errors in form before sending the data to backend
   useEffect(() => {
@@ -35,36 +38,28 @@ function CreateArticles() {
   //handle blog values after submit and before going to backend
   async function handleBlogValues(image) {
     let uploadedImageUrl = null;
+    let updatedValues=formValues;
+    setIsLoading(true);
     if (image) {
       try {
         uploadedImageUrl = await uploadToCloudinary(image);
-        setFormValues({ ...formValues, imageUrl: uploadedImageUrl });
+        updatedValues.imageUrl=uploadedImageUrl;
+        // setFormValues({ ...formValues, imageUrl: uploadedImageUrl });
       } catch (error) {
         console.error("Error uploading to Cloudinary", error);
         return;
       }
     }
-    sendValtoBackend({ ...formValues, imageUrl: uploadedImageUrl });
-  }
-
-  // sending values to backend
-  async function sendValtoBackend(formValues) {
-    try {
-      const url = `${apiUrl}posts/`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify(formValues),
-      });
-      const result = await response.json();
-      console.log(result);
-      navigate("/articles");
-    } catch (error) {
-      console.error("Problem with the backend", error);
+    // sendValtoBackend({ ...formValues, imageUrl: uploadedImageUrl });
+    const result = await createNewArticleAPI(auth.token, updatedValues);
+    // console.log(result);
+    if (!result.success) {
+      toast.error(result.msg);
+      return;
     }
+    toast.success(result.msg);
+    setIsLoading(false);
+    navigate("/articles");
   }
 
   //validating the text data for the article
@@ -144,8 +139,19 @@ function CreateArticles() {
     setFormErrors(validateTextData(formValues));
   }
 
+  if (isLoading) {
+    return (
+      <div>
+        <LoadingOverlay />
+      </div>
+    );
+  }
+
   return (
-    <div id="new-post-inputs" className="sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md">
+    <div
+      id="new-post-inputs"
+      className="sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
+    >
       <div id="new-post-image-btn" className="mb-4">
         {!imagePreview ? (
           <>
