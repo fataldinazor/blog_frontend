@@ -31,7 +31,10 @@ function DropDown() {
         type="button"
         onClick={() => setIsOpen((prevState) => !prevState)}
       >
-        <p className="text-gray-400 ">@<span className="text-white truncate">{auth.userInfo.username}</span></p>
+        <p className="">
+          <span className="text-gray-400">@</span>
+          {auth.userInfo.username}
+        </p>
         <svg
           className="w-2.5 h-2.5 ms-3"
           aria-hidden="true"
@@ -53,7 +56,7 @@ function DropDown() {
         id="dropdown"
         className={`${
           isOpen ? "block" : "hidden"
-        } absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
+        } absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
       >
         <ul
           className="py-2 text-sm text-gray-700 dark:text-gray-200"
@@ -61,7 +64,7 @@ function DropDown() {
         >
           {auth.userInfo.role === "AUTHOR"
             ? authorMenu.map((menu, index) => (
-                <li key={index} onClick={()=>setIsOpen(false)}>
+                <li key={index} onClick={() => setIsOpen(false)}>
                   <Link
                     to={
                       menu.name === "Profile"
@@ -75,7 +78,7 @@ function DropDown() {
                 </li>
               ))
             : userMenu.map((menu, index) => (
-                <li key={index} onClick={()=> setIsOpen(false)}>
+                <li key={index} onClick={() => setIsOpen(false)}>
                   <Link
                     to={menu.url}
                     className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -85,9 +88,9 @@ function DropDown() {
                 </li>
               ))}
 
-          <li onClick={()=>setIsOpen(false)}>
+          <li onClick={() => setIsOpen(false)}>
             <hr />
-            <div 
+            <div
               onClick={logout}
               className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
             >
@@ -101,36 +104,48 @@ function DropDown() {
 }
 
 function Header() {
-  const { auth} = useAuth();
+  const { auth } = useAuth();
   return (
     <div
       id="header"
-      className="flex items-center justify-between bg-black text-white py-4 px-6 shadow-lg "
+      className="flex items-center justify-between bg-black text-white py-4 px-6 shadow-lg z-50"
     >
       <Link to="/" id="logo" className="flex items-center">
         <BlogIcon height="30" with="30" color="white" />
-        <h1 className="hidden md:block text-3xl font-bold ml-2">InqPress</h1>
+        <h1 className="hidden md:block text-3xl font-bold ml-2">InQPress</h1>
       </Link>
 
       <div id="header-navbar" className="flex items-center space-x-6">
         <div id="articlesNav" className="cursor-pointer hover:text-gray-300">
-          <Link to="/articles">Articles</Link>
+          {auth.isAuthenticated && auth.userInfo.role === "AUTHOR" ? (
+            <Link to="/articles/new">
+              <button className="hidden px-5 py-3 border-white border rounded-lg text-xs font-bold md:block">
+                Create New
+              </button>
+            </Link>
+          ) : (
+            ""
+          )}
         </div>
 
         {!auth.isAuthenticated ? (
           <div id="authNav" className="flex items-center space-x-4">
-            <button
-              id="loginBtn"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-md transition duration-300"
-            >
-              <Link to="/login">Login</Link>
-            </button>
-            <button
-              id="registerBtn"
-              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg shadow-md transition duration-300"
-            >
-              <Link to="/register">Register</Link>
-            </button>
+            <Link to="/login">
+              <button
+                id="loginBtn"
+                className="px-4 py-2 text-xs border-white border-2 text-white rounded-lg hover:text-black hover:bg-white shadow-md transition duration-300"
+              >
+                Login
+              </button>
+            </Link>
+            <Link to="/register">
+              <button
+                id="registerBtn"
+                className="px-4 py-2 text-xs border-white border-2 text-white rounded-lg hover:text-black hover:bg-white shadow-md transition duration-300"
+              >
+                Register
+              </button>
+            </Link>
           </div>
         ) : (
           <DropDown />

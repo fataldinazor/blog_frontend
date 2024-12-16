@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="30px" height="30px" viewBox="0 0 32 32" id="i-forwards" xmlns="http://www.w3.org/2000/svg" fill="black" stroke="currentcolor" stroke-linecap="square" stroke-linejoin="round" stroke-width="3">
-    <path d="M16 2 L30 16 16 30 16 16 2 30 2 2 16 16 Z" /> 
+<svg width="34px" height="34px" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background square -->
+  <rect width="34" height="34" fill="black" />
+  
+  <!-- Scaled and centered white icon -->
+  <g transform="translate(7, 6) scale(0.7)"> <!-- Scale down and center -->
+    <path d="M16 2 L30 16 16 30 16 16 2 30 2 2 16 16 Z" 
+          fill="white" 
+          stroke-linecap="square" 
+          stroke-linejoin="round" 
+          stroke-width="3" />
+  </g>
 </svg>
+

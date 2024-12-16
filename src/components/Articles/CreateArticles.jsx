@@ -37,17 +37,25 @@ function CreateArticles() {
 
   //handle blog values after submit and before going to backend
   async function handleBlogValues(image) {
-    let uploadedImageUrl = null;
+    let cloudinaryUpload = null;
     let updatedValues=formValues;
     setIsLoading(true);
     if (image) {
       try {
-        uploadedImageUrl = await uploadToCloudinary(image);
-        updatedValues.imageUrl=uploadedImageUrl;
-        // setFormValues({ ...formValues, imageUrl: uploadedImageUrl });
+        cloudinaryUpload = await uploadToCloudinary(image);
+        console.log(cloudinaryUpload);
+        if(cloudinaryUpload.networkError){
+          toast.error(cloudinaryUpload.msg);
+          throw new Error(cloudinaryUpload.msg);
+        }
+        if(!cloudinaryUpload.success){
+          toast.error(cloudinaryUpload.msg);
+          updatedValues.imageUrl=null;
+        }else{
+          updatedValues.imageUrl=cloudinaryUpload.image_url;
+        }
       } catch (error) {
         console.error("Error uploading to Cloudinary", error);
-        return;
       }
     }
     // sendValtoBackend({ ...formValues, imageUrl: uploadedImageUrl });
@@ -150,7 +158,7 @@ function CreateArticles() {
   return (
     <div
       id="new-post-inputs"
-      className="sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
+      className="min-h-full  sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
     >
       <div id="new-post-image-btn" className="mb-4">
         {!imagePreview ? (
@@ -194,7 +202,7 @@ function CreateArticles() {
           onChange={handleChange}
           rows={2}
           cols={35}
-          className="text-4xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          className="text-2xl ms:text-4xl lg:text-4xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
         ></textarea>
         {formErrors.title && (
           <p className="mt-2 text-sm text-gray-500">{formErrors.title}</p>

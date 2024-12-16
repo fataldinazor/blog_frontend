@@ -8,8 +8,8 @@ import {
   handleBookmarkAPI,
 } from "@/api/articleApi";
 import { useAuth } from "@/context/AuthContext";
-import { truncateString } from "@/utils/helper";
-import { BlogIcon } from "@/assets/Icons";
+import { truncateString, formatDate } from "@/utils/helper";
+import { BlogIcon, ModifyIcon } from "@/assets/Icons";
 import {
   BookmarkIcon,
   LikedIcon,
@@ -28,6 +28,7 @@ function MoreArticles() {
   const { auth } = useAuth();
   const params = useParams();
 
+  //fetching suggested articles on mount
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -50,11 +51,10 @@ function MoreArticles() {
         setIsLoading(false);
       }
     };
-    // setTimeout(() => {
     fetchData();
-    // }, 5000);
   }, [auth.token, params.articleId]);
 
+  // function to randomize the article
   function randomizeArticles(moreArticles) {
     let articleArr = [];
     let set = new Set();
@@ -120,7 +120,7 @@ function MoreArticles() {
                     </div>
                   )}
                   <div className="py-4 sm:border-l-transparent sm:py-2 flex justify-between">
-                    <Link to={`/articles/${article.id}`}>
+                    <div className="cursor-default">
                       <h3 className="text-sm font-semibold md:font-bold uppercase text-gray-900">
                         {truncateString(article.title, 35)}
                       </h3>
@@ -128,12 +128,12 @@ function MoreArticles() {
                         by{" "}
                         <Link
                           to={`/author/${article.user.id}`}
-                          className="font-semibold"
+                          className="font-semibold hover:underline"
                         >
                           {article.user.username}
                         </Link>
                       </p>
-                    </Link>
+                    </div>
                     <Link
                       to={`/articles/${article.id}`}
                       className="flex items-center px-4 py-2 text-center text-xs font-bold uppercase text-gray-900"
@@ -160,6 +160,7 @@ function MoreArticles() {
 
 // Main Article Body
 function Article({ article, user }) {
+  const { auth } = useAuth();
   return (
     <main>
       <article>
@@ -178,12 +179,7 @@ function Article({ article, user }) {
               {article.createdAt === article.updatedAt
                 ? "Published on: "
                 : "Updated on: "}
-              {new Date(article.updatedAt).toLocaleDateString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}{" "}
-              at{" "}
+              {formatDate(article.updatedAt)} at{" "}
               {new Date(article.updatedAt).toLocaleTimeString("en-US", {
                 hour: "2-digit",
                 minute: "numeric",
@@ -196,30 +192,43 @@ function Article({ article, user }) {
               className="mt-4 flex flex-wrap justify-center gap-2"
               aria-label="Tags"
             ></div>
-            <div className="flex items-center">
-              {/* Avatar */}
-              <img
-                className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
-                src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
-                alt="Avatar"
-              />
-
-              {/* User Info */}
-              <div className="ml-3 flex items-center space-x-2">
-                <div>
-                  <p className="text-xs lg:text-sm leading-none font-normal lg:pb-0.5 text-gray-500">
-                    Published by
-                  </p>
-                  <Link
-                    to={`/author/${user.id}`}
-                    className="text-sm md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
-                    tabIndex="0"
-                    role="link"
-                  >
-                    {user.username}
-                  </Link>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <img
+                  className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
+                  src={
+                    user.profile.avatar_url ||
+                    "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
+                  }
+                  alt="Avatar"
+                />
+                <div className="ml-3 flex items-center space-x-2">
+                  <div className="flex flex-col gap-1 lg:gap-0">
+                    <p className="text-xs lg:text-sm leading-none font-normal lg:pb-0.5 text-gray-500">
+                      Published by
+                    </p>
+                    <Link
+                      to={`/author/${user.id}`}
+                      className="text-sm md:text-md lg:text-lg leading-none font-semibold text-gray-800 hover:underline"
+                      tabIndex="0"
+                      role="link"
+                    >
+                      {user.username}
+                    </Link>
+                  </div>
                 </div>
               </div>
+              {user?.id === auth?.userInfo.id && (
+                <div>
+                  <Link
+                    to="update"
+                    className="flex gap-1 text-sm font-semibold mx-2 border border-solid border-black py-1 px-3 rounded-full "
+                  >
+                    <ModifyIcon height="20" width="20" />
+                    Edit
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -264,21 +273,25 @@ function PostInteraction({ counts, commentRef, comments }) {
   // fetching if the logged user has liked and bookmarked the post or not
   useEffect(() => {
     const fetchData = async () => {
-      const result = await UserLikedBookmarkPostAPI(
-        auth.token,
-        params.articleId
-      );
-      if (result.liked === undefined && result.bookmarked === undefined) {
-        toast.error("Couldn't fetch user like/bookmark for the post");
-      } else if (result.bookmarked === undefined) {
-        toast.error("Couldn't fetch user bookmark for the post");
-        setIsLiked(result?.liked);
-      } else if (result.liked === undefined) {
-        toast.error("Couldn't fetch user like for the post");
-        setIsBookmarked(result?.bookmarked);
-      } else {
-        setIsLiked(result?.liked);
-        setIsBookmarked(result?.bookmarked);
+      try {
+        const result = await UserLikedBookmarkPostAPI(
+          auth.token,
+          params.articleId
+        );
+        if (result.liked === undefined && result.bookmarked === undefined) {
+          toast.error("Couldn't fetch user like/bookmark for the post");
+        } else if (result.bookmarked === undefined) {
+          toast.error("Couldn't fetch user bookmark for the post");
+          setIsLiked(result?.liked);
+        } else if (result.liked === undefined) {
+          toast.error("Couldn't fetch user like for the post");
+          setIsBookmarked(result?.bookmarked);
+        } else {
+          setIsLiked(result?.liked);
+          setIsBookmarked(result?.bookmarked);
+        }
+      } catch (error) {
+        console.log("Couldn't fetch Post Interactions ", error);
       }
     };
     fetchData();
@@ -297,7 +310,6 @@ function PostInteraction({ counts, commentRef, comments }) {
   function copyToClipboard() {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Link Copied to Clipboard", {
-      position: "top-center",
       duration: 2000,
     });
   }
@@ -419,6 +431,11 @@ function ArticleId() {
           auth.token,
           params.articleId
         );
+        if (result.networkError) {
+          toast.error(result.msg);
+          setIsLoading(false);
+          return;
+        }
         if (!result.success) {
           if (result.status === 404) {
             // redirecting to 404 page
@@ -499,7 +516,9 @@ function ArticleId() {
                 <Suspense
                   fallback={<Loading height="30" width="30" color="black" />}
                 >
-                  <Comments comments={comments} setComments={setComments} />
+                  {user && (
+                    <Comments comments={comments} setComments={setComments} />
+                  )}
                 </Suspense>
               )}
             </div>

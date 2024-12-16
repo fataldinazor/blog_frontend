@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { storingUserToLS } from "../../utils/helper";
-import { signupUserAPI } from "@/api/authApi";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { storingUserToLS, storingGuestToLS } from "@/utils/helper";
+import { signupUserAPI, guestLoginAPI } from "@/api/authApi";
+import { BlogIcon, UserIcon } from "@/assets/Icons";
 import toast from "react-hot-toast";
+import { AuthLoadingOverlay } from "../Loading";
 function UserRegister() {
   const [formValues, setFormValues] = useState({
     username: "",
@@ -12,6 +14,7 @@ function UserRegister() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
@@ -56,23 +59,59 @@ function UserRegister() {
 
   //handling the user signup api
   async function signupUser(username, password, confirmPassword) {
-    const result = await signupUserAPI(username, password, confirmPassword);
-    if (result?.success) {
-      const { token, user } = result;
-      const expiry = storingUserToLS(user, token);
-      setAuth({
-        isAuthenticated: true,
-        token: token,
-        userInfo: user,
-        expiry: expiry,
-      });
-      toast.success("User Created Succesfully...Redirecting");
-      navigate("/articles");
-    } else {
-      toast.error(result.msg || "Failed to create a new User! Try again Later");
-      console.log("Failed to create a new User");
+    try {
+      const result = await signupUserAPI(username, password, confirmPassword);
+      if (result?.success) {
+        const { token, user } = result;
+        const expiry = storingUserToLS(user, token);
+        setAuth({
+          isAuthenticated: true,
+          token: token,
+          userInfo: user,
+          expiry: expiry,
+        });
+        toast.success("User Created Succesfully...Redirecting");
+        navigate("/articles");
+      } else {
+        toast.error(
+          result.msg || "Failed to create a new User! Try again Later"
+        );
+        console.log("Failed to create a new User");
+      }
+    } catch (error) {
+      console.log("Error occurred: ", error);
+      toast.error("Failed in creating a new Member");
+    } finally {
+      setIsLoading(false);
     }
   }
+
+  const handleGuestUser = async () => {
+    setIsLoading(true);
+    try {
+      const result = await guestLoginAPI();
+      if (result.success) {
+        const { user, token } = result;
+        const expiry = storingGuestToLS(user, token);
+        setAuth({
+          isAuthenticated: true,
+          token: token,
+          userInfo: user,
+          expiry: expiry,
+        });
+        toast.success("Login successful! Redirecting...", {
+          duration: 4000,
+        });
+        navigate("/articles");
+      } else {
+        toast.error(result.msg || "Guest Login Failed");
+      }
+    } catch (error) {
+      console.log("Falied to create Guest User! ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // handling the submission of the form
   function handleSubmit(event) {
@@ -85,89 +124,141 @@ function UserRegister() {
   function handleChange(e) {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
-    // console.log(formValues);
+  }
+
+  if (isLoading) {
+    return <AuthLoadingOverlay />;
   }
 
   return (
     <div
-      id="user-register"
-      className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md border"
+      id="login-container"
+      className="h-full w-full flex justify-center items-center bg-slate-50"
     >
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        Register as a User
-      </h1>
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        autoComplete="off"
-        className="space-y-4"
-      >
-        <div>
-          <label
-            htmlFor="username"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Username:
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            placeholder="Enter your username"
-            value={formValues.username}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <p className="text-sm text-red-600 mt-1">{formErrors.username}</p>
-        </div>
+      <div className="flex w-full max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg dark:bg-gray-800 lg:max-w-4xl min-w-80">
+        <div
+          className="hidden bg-cover lg:block lg:w-1/2"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1606660265514-358ebbadc80d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1575&q=80')`,
+          }}
+        ></div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Password:
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formValues.password}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <p className="text-sm text-red-600 mt-1">{formErrors.password}</p>
-        </div>
+        <div className="w-full px-6 py-8 md:px-8 lg:w-1/2">
+          <div className="flex justify-center mx-auto">
+            <BlogIcon height="30" width="30" color="black" />
+          </div>
 
-        <div>
-          <label
-            htmlFor="confirmPassword"
-            className="block text-gray-700 font-medium mb-1"
-          >
-            Confirm Password:
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            placeholder="Confirm your password"
-            value={formValues.confirmPassword}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <p className="text-sm text-red-600 mt-1">
-            {formErrors.confirmPassword}
+          <p className="mt-3 text-xl text-center text-gray-600 dark:text-gray-200">
+            Welcome to InqPress
           </p>
-        </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
-        >
-          Submit
-        </button>
-      </form>
+          <button
+            onClick={handleGuestUser}
+            className="w-full flex items-center justify-center mt-4 bg-emerald-500  text-white transition-colors duration-300 transform border rounded-lg dark:border-gray-700 dark:text-gray-200 hover:bg-emerald-700 dark:hover:bg-gray-600"
+          >
+            <UserIcon height="25" width="25" />
+
+            <span className="px-4 py-2 font-bold text-center">
+              Sign Up as a Guest
+            </span>
+          </button>
+
+          <form onSubmit={handleSubmit} noValidate autoComplete="off">
+            <div className="flex items-center justify-between mt-4">
+              <span className="w-1/5 border-b dark:border-gray-600 lg:w-1/4"></span>
+
+              <p className="text-xs text-center text-gray-500 uppercase dark:text-gray-400 ">
+                Sign up with username
+              </p>
+
+              <span className="w-1/5 border-b dark:border-gray-400 lg:w-1/4"></span>
+            </div>
+
+            <div className="mt-4">
+              <label
+                className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-200"
+                htmlFor="username"
+              >
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                value={formValues.username}
+                onChange={handleChange}
+                className="block w-full px-4 py-2 text-gray-700 bg-white border rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <p className="text-sm text-red-600 mt-1">{formErrors.username}</p>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex justify-between">
+                <label
+                  className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-200"
+                  htmlFor="password"
+                >
+                  Password
+                </label>
+              </div>
+
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formValues.password}
+                onChange={handleChange}
+                className="block w-full px-4 py-2 text-gray-700 bg-white border rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <p className="text-sm text-red-600 mt-1">{formErrors.password}</p>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex justify-between">
+                <label
+                  className="block mb-2 text-sm font-medium text-gray-600 dark:text-gray-200"
+                  htmlFor="password"
+                >
+                  Confirm Password
+                </label>
+              </div>
+
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Enter your password"
+                value={formValues.confirmPassword}
+                onChange={handleChange}
+                className="block w-full px-4 py-2 text-gray-700 bg-white border rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              <p className="text-sm text-red-600 mt-1">
+                {formErrors.confirmPassword}
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <button
+                type="submit"
+                className="w-full px-6 py-3 text-sm font-medium tracking-wide border text-white capitalize transition-colors duration-300 transform bg-black rounded-lg hover:bg-white hover:text-black hover:border-black focus:outline-none focus:ring focus:ring-gray-300 focus:ring-opacity-50"
+              >
+                Sign Up
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-5">
+            <p className="text-xs text-center text-gray-500 uppercase dark:text-gray-400">
+              Already a Member/Author?{" "}
+              <span className="text-black hover:text-gray-700 underline">
+                <Link to="/login">Login</Link>
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

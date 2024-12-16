@@ -12,11 +12,15 @@ const uploadToCloudinary = async (image) => {
       method: "POST",
       body: formData,
     });
+    if(!response.ok){
+      const errorMessage={success:false, msg:"Couldn't upload image to cloudinary server"};
+      return errorMessage;
+    }
     const result = await response.json();
-    return result.secure_url;
+    return {success:true, image_url:result.secure_url};
   } catch (error) {
     console.error("Error occured while uploading to cloudinary", error);
-    return null;
+    return {success:false, networkError:true, msg:"Network Error, Please connect to the internet"}
   }
 };
 
@@ -41,7 +45,7 @@ const createNewArticleAPI = async (userToken, formValues) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Error Occurred", error);
+    console.error("Error", error);
   }
 };
 
@@ -108,13 +112,14 @@ const fetchArticleWithIdAPI = async (userToken, articleId) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.log("Error occured from backend: " + error);
+    console.log("Error " + error);
+    return {success:false, networkError:true, msg:"Failed to fetch, Please check your internet connection", error};
   }
 };
 
 const updateArticleWithId = async (userToken, articleId, formValues) => {
   const url = `${apiUrl}posts/${articleId}`;
-  console.log(userToken, articleId, formValues);
+  // console.log(userToken, articleId, formValues);
   try {
     const response = await fetch(url, {
       method: "PUT",
@@ -129,7 +134,7 @@ const updateArticleWithId = async (userToken, articleId, formValues) => {
     }
     return await response.json();
   } catch (error) {
-    console.log("Error Occured from backend" + error);
+    console.log("Error" + error);
   }
 };
 
@@ -146,7 +151,7 @@ const fetchMoreArticlesAPI = async (userToken, articleId) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.log("Error occured from backend: " + error);
+    console.log("Error " + error);
   }
 };
 
@@ -164,7 +169,7 @@ const fetchCommentsAPI = async (userToken, articleId) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.log("Error occured from backend: " + error);
+    console.log("Error " + error);
   }
 };
 
@@ -186,7 +191,7 @@ const postUserCommentAPI = async (userToken, articleId, userComment) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erorr occured from backend", error);
+    console.error("Error ", error);
   }
 };
 
@@ -239,7 +244,7 @@ const handleLikeAPI = async (userToken, articleId) => {
     }
     return await response.json();
   } catch (error) {
-    console.error(`Error occured from Backend ${error}`);
+    console.error(`Error ${error}`);
   }
 };
 
@@ -260,7 +265,7 @@ const handleBookmarkAPI = async (userToken, articleId) => {
     }
     return await response.json();
   } catch (error) {
-    console.error(`Error occurred from backend! ${error}`);
+    console.error(`Error ${error}`);
   }
 };
 
@@ -280,7 +285,7 @@ const deletePostWithId = async (userToken, articleId, imageUrl) => {
     }
     return await response.json();
   } catch (error) {
-    console.error(`Error occurred from backend! ${error}`);
+    console.error(`Error ${error}`);
   }
 };
 

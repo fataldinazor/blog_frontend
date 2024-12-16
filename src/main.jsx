@@ -27,6 +27,8 @@ import AuthorLayout from "./components/Author/AuthorLayout"
 import AuthorPage from "./components/Author/AuthorPage";
 import UpdateArticles from "./components/Articles/UpdateArticles";
 
+import NotFoundPage from "./components/Error/Error404";
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
@@ -43,9 +45,11 @@ const router = createBrowserRouter(
         <Route path="author" element={<AuthorRegister />} />
       </Route>
       <Route path="login" element={<Login />} />
+
       <Route path="author" element={<AuthorLayout/>}>
         <Route path=":authorId" element={<AuthorPage/>}/>
       </Route>
+
       <Route
         element={<ProtectedRoute allowedRoles={["ADMIN", "AUTHOR", "USER"]} />}
       >
@@ -60,6 +64,8 @@ const router = createBrowserRouter(
           </Route>
         </Route>
       </Route>
+      {/* <Route path="403" element={}/> */}
+      <Route path="*" element={<NotFoundPage/>}/>
     </Route>
   )
 );

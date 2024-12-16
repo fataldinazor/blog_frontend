@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { fetchCommentsAPI, postUserCommentAPI } from "../../api/articleApi";
-import { useAuth } from "../../context/AuthContext";
+import { fetchCommentsAPI, postUserCommentAPI } from "@/api/articleApi";
+import { useAuth } from "@/context/AuthContext";
 import { useParams } from "react-router-dom";
-import { formatDate } from "../../utils/helper";
+import { formatDate } from "@/utils/helper";
 import toast from "react-hot-toast";
 import { Loading } from "../Loading";
 
@@ -14,7 +14,7 @@ function Comments({ comments, setComments }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      // setIsLoading(true)
+      setIsLoading(true);
       try {
         const result = await fetchCommentsAPI(auth.token, params.articleId);
         if (!result.success) {
@@ -23,15 +23,12 @@ function Comments({ comments, setComments }) {
           setComments(result.comments);
         }
       } catch (error) {
-        console.log("Error from backend", error);
+        console.log("Error fetching comments", error);
       } finally {
         setIsLoading(false);
       }
     };
-    // setIsLoading(true);
-    // setTimeout(() => {
-      fetchData();
-    // }, 5000);
+    fetchData();
   }, [params.articleId]);
 
   //trying to use optimistic UI here
@@ -115,7 +112,9 @@ function Comments({ comments, setComments }) {
                   <div className="flex items-center">
                     <img
                       className="w-8 h-8 rounded-full mr-3"
-                      src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
+                      src={
+                        "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
+                      }
                       alt={comment.user.username}
                     />
                     <div>

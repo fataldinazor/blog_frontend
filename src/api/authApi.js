@@ -11,15 +11,24 @@ async function loginUserAPI(username, password) {
       },
       body: JSON.stringify({ username, password }),
     });
-    if (!response.ok) {
-      const errorResult = await response.json();
-      return errorResult;
-    }
     const result = await response.json();
     return result;
   } catch (error) {
     console.log(`Error:${error}`);
-    return {sucess:false, msg: "Network Falied" };
+    return { sucess: false, msg: "Network Failure, Check Internet Connection" };
+  }
+}
+
+async function guestLoginAPI() {
+  const url = `${apiUrl}auth/guest-login`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return {success:false, networkError:true, msg:"Network Failure, Check Internet Connection", error}
   }
 }
 
@@ -33,14 +42,10 @@ async function signupUserAPI(username, password, confirmPassword) {
       },
       body: JSON.stringify({ username, password, confirmPassword }),
     });
-    if (!response.ok) {
-      const errorResult = await response.json();
-      return errorResult;
-    }
     return await response.json();
   } catch (error) {
     console.log("Error" + error);
-    return {sucess:false, msg: "Network Falied" };
+    return { sucess: false, msg:"Network Failure, Check Internet Connection" };
   }
 }
 
@@ -66,15 +71,11 @@ async function signupAuthorAPI(
         confirmPassword,
       }),
     });
-    if (!response.ok) {
-        const errorResponse= await response.json();
-        return errorResponse;
-    }
     const result = await response.json();
     return result;
   } catch (error) {
     console.log(`Error ${error}`);
-    return ({sucess:false, msg:"Network Falied"})
+    return { sucess: false, msg: "Network Failure, Check Internet Connection" };
   }
 }
-export { loginUserAPI, signupUserAPI, signupAuthorAPI};
+export { loginUserAPI, guestLoginAPI, signupUserAPI, signupAuthorAPI };

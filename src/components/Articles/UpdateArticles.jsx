@@ -52,10 +52,10 @@ function UpdateArticles() {
           params.articleId
         );
         if (!result.success) {
-          if(result.status===404){
-            navigate("/404")
-            toast.error(result.msg)
-          }else {
+          if (result.status === 404) {
+            navigate("/404");
+            toast.error(result.msg);
+          } else {
             toast.error(result.msg);
           }
         } else {
@@ -117,12 +117,24 @@ function UpdateArticles() {
       //if file exists
       if (image.file) {
         try {
-          const uploadedImageUrl = await uploadToCloudinary(image.file);
-          updatedFormValues = {
-            ...updatedFormValues,
-            image_url: uploadedImageUrl,
-            old_image_url: article.image_url || null,
-          };
+          const cloudinaryUpload = await uploadToCloudinary(image.file);
+          if (cloudinaryUpload.networkError) {
+            toast.error(cloudinaryUpload.msg);
+            // throw new Error(cloudinaryUpload.msg);
+          }
+          if (!cloudinaryUpload.success) {
+            toast.error(cloudinaryUpload.msg)
+            updatedFormValues = {
+              ...updatedFormValues,
+              old_image_url: null,
+            };
+          } else {
+            updatedFormValues = {
+              ...updatedFormValues,
+              image_url:cloudinaryUpload.image_url,
+              old_image_url: article.image_url || null,
+            };
+          }
         } catch {
           console.log("Upload to Cloudinary Failed");
         }
@@ -404,7 +416,7 @@ function UpdateArticles() {
             <button onClick={handleDelete}>
               <div className="flex gap-1 items-center bg-red-700 text-white rounded-md py-2 p-3">
                 <TrashIcon height="20" width="20" color="white" />
-                Delete Post
+                <span className="hidden md:block">Delete Post</span>
               </div>
             </button>
           </div>

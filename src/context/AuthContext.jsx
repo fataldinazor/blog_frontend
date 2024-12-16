@@ -16,7 +16,6 @@ function AuthProvider({ children }) {
   //checking for the token validity at each page change and
   // logging out the user if token expired
   useEffect(() => {
-    // console.log(location);
     checkTokenValidity(auth.expiry);
   }, [location, auth.expiry]);
 
@@ -37,7 +36,7 @@ function AuthProvider({ children }) {
       return expiry;
     } catch (error) {
       console.error("Couldn't fetch data from localStorage", error);
-      return "";
+      return;
     }
   }
 

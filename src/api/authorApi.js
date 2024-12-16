@@ -26,7 +26,11 @@ const uploadToCloudinaryAPI = async (image) => {
     return { success: true, image_url: result.secure_url };
   } catch (error) {
     console.error("Error occured while uploading to cloudinary", error);
-    return { success: false, networkError:true, msg: "Failed to connect to Cloudinary server, Please check your internet connection" };
+    return {
+      success: false,
+      networkError: true,
+      msg: "Failed to connect to Cloudinary server, Please check your internet connection",
+    };
   }
 };
 
@@ -91,12 +95,12 @@ const fetchBookmarkedPostsAPI = async (userToken, authorId) => {
     const result = await response.json();
     return result;
   } catch (error) {
-        console.log("Error Occured" + error);
-        return {
-          success: false,
-          networkError: true,
-          msg: "Unable to connect to the server. Please check your internet connection.",
-        };
+    console.log("Error Occured" + error);
+    return {
+      success: false,
+      networkError: true,
+      msg: "Unable to connect to the server. Please check your internet connection.",
+    };
   }
 };
 

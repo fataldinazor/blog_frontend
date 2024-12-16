@@ -13,7 +13,7 @@ import { BlogIcon } from "@/assets/Icons";
 import { Loading } from "../Loading";
 
 export function CarouselSize() {
-  const [articles, setArticles] = useState([]);
+  const [articles, setArticles] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -30,55 +30,64 @@ export function CarouselSize() {
     };
     // setIsLoading(true);
     // setTimeout(() => {
-      fetchData();
+    fetchData();
     // }, 5000);
   }, []);
 
   if (isLoading) {
-    return <Loading color="white" height="50" width="50"/>;
+    return <Loading color="white" height="50" width="50" />;
   }
 
-  return (
-    <Carousel className="w-2/3 max-w-sm md:max-w-screen-md lg:max-w-screen-lg">
-      <CarouselContent className="-ml-1">
-        {articles.map((article, index) => (
-          <CarouselItem key={index} className="pl-1 md:basis-1/2 lg:basis-1/3">
-            <div className="p-1">
-              <Card>
-                <CardContent
-                  className="relative flex aspect-square rounded-xl items-center justify-center p-6 bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url(${article.image_url})`,
-                  }}
-                >
-                  <div className="absolute inset-0 rounded-xl bg-black bg-opacity-30"></div>
-                  <div className="absolute bottom-0 rounded-xl left-0 w-full bg-black bg-opacity-60 text-white p-2">
-                    <h2 className="text-sm md:text-base font-semibold truncate ...">
-                      {article.title}
-                    </h2>
-                    <Link
-                      to={`/articles/${article.id}`}
-                      className="text-sm font-semibold text-white hover:underline"
-                    >
-                      Read More →
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious className="bg-black"></CarouselPrevious>
-      <CarouselNext className="bg-black"></CarouselNext>
-    </Carousel>
-  );
+  if (articles) {
+    return (
+      <Carousel
+        opts={{ align: "start", loop: true }}
+        className="w-2/3 max-w-sm md:max-w-screen-md lg:max-w-screen-lg"
+      >
+        <CarouselContent className="-ml-1">
+          {articles.map((article, index) => (
+            <CarouselItem
+              key={index}
+              className="pl-1 md:basis-1/2 lg:basis-1/3"
+            >
+              <div className="p-1">
+                <Card>
+                  <CardContent
+                    className="relative flex aspect-square rounded-xl items-center justify-center p-6 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${article.image_url})`,
+                    }}
+                  >
+                    <div className="absolute inset-0 rounded-xl bg-black bg-opacity-30"></div>
+                    <div className="absolute bottom-0 rounded-xl left-0 w-full bg-black bg-opacity-60 text-white p-2">
+                      <h2 className="text-sm md:text-base font-semibold truncate">
+                        {article.title}
+                      </h2>
+                      <Link
+                        to={`/articles/${article.id}`}
+                        className="text-sm font-semibold text-white hover:underline"
+                      >
+                        Read More →
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="bg-black"></CarouselPrevious>
+        <CarouselNext className="bg-black"></CarouselNext>
+      </Carousel>
+    );
+  } else {
+    return <div>Couldn't Fetch Articles</div>;
+  }
 }
 
 const HeroSection = () => {
   return (
     <section className="flex flex-col h-full items-center justify-center bg-black text-white overflow-hidden relative">
-      {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover"
         style={{
@@ -88,28 +97,22 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-black bg-opacity-70"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col justify-center items-center sm:gap-10 md:gap-3">
+      <div className="relative z-10 flex flex-col justify-center items-center sm:gap-10">
         <div className="lg:hidden pb-5">
           <BlogIcon color="white" height="50" width="50" />
         </div>
-        <div className="relative z-10 text-center px-10 md:max-w-screen-md lg:max-w-screen-lg">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
-            Curating Thoughts, Shaping Futures
+        <div className="relative z-10 text-center px-10 lg:max-w-screen-md ">
+          <h1 className="text-2xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
+            Curating Thoughts <br /> Shaping Futures
           </h1>
           <p className="text-sm md:text-xl mb-6 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
             Stay updated with the latest trends, insights, and tips from the
             world of technology, development, and more.
           </p>
-          <Link
-            to="/articles"
-            className="inline-block px-4 py-3 text-sm md:text-lg md:px-8 bg-white text-black font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 animate__animated animate__fadeIn animate__delay-3s"
-          >
-            Explore Articles
-          </Link>
         </div>
       </div>
 
-      <div className="relative z-10 w-full mt-8 md:mt-12 text-white">
+      <div className="relative z-10 w-full mt-12 md:mt-8 lg:mt-2 text-white">
         <div className="px-4 sm:px-8 md:px-12">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-4 md:mb-8">
             Featured Articles

@@ -27,7 +27,7 @@ function PaginateBtns({ currPage, setCurrPage, totalPages }) {
     }
   }
   return (
-    <div className="flex justify-evenly gap-20 py-5 mx-5 font-semibold text-3xl ">
+    <div className="flex justify-evenly gap-20 py-5 mx-5 font-semibold text-3xl m-4 ">
       {currPage > 1 && (
         <button
           className="pt-1 pb-2 px-3 md:px-5 bg-black text-white rounded-lg text-center"
@@ -61,11 +61,11 @@ function ArticleList({ articles, articlesPerPage }) {
         currPage * articlesPerPage
       )
     );
-    // scrollTo(0,0);
+    scrollTo(0,0);
   }, [currPage]);
 
   return (
-    <div className="min-w-80 flex flex-col m-4">
+    <div className="min-w-80 flex flex-col">
       <div className="mx-auto">
         <h1 className="text-3xl md:text-4xl lg:text-5xl py-2 md:py-3 lg:py-4 mb-2 font-bold mr-auto">
           Discover Articles
@@ -80,7 +80,7 @@ function ArticleList({ articles, articlesPerPage }) {
               >
                 {article.image_url && (
                   <img
-                    className="object-cover w-full h-64"
+                    className="object-cover w-full h-40 md:h-64 "
                     src={article.image_url}
                     alt="cover-image"
                   />
@@ -106,17 +106,14 @@ function ArticleList({ articles, articlesPerPage }) {
 
                   <div className="flex justify-between mt-4 mb-2 ml-1 float">
                     <div className="flex items-center">
-                      {/* Avatar */}
                       <img
                         className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
                         src={
                           article.user.profile.avatar_url ||
-                          "https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                          "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
                         }
                         alt="Avatar"
                       />
-
-                      {/* User Info */}
                       <div className="ml-3 flex items-center space-x-2">
                         <div>
                           <p className="text-xs lg:text-sm leading-none font-normal pb-0.5 text-gray-500">
@@ -133,8 +130,8 @@ function ArticleList({ articles, articlesPerPage }) {
                         </div>
                       </div>
                     </div>
-                    <Link to={`/articles/${article.id}`} className="pt-2">
-                      <BlogIcon height="30" width="30" color="black" />
+                    <Link to={`/articles/${article.id}`} className="pt-2 pr-1">
+                      <BlogIcon height="25" width="25" color="black" />
                     </Link>
                   </div>
                 </div>
@@ -206,7 +203,7 @@ function TopAuthorList() {
                         className="w-8 h-8 rounded-full"
                         src={
                           author?.profile?.avatar_url ||
-                          "https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=48&q=60"
+                          "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
                         }
                         alt={author.username || "Author Avatar"}
                       />
@@ -269,7 +266,7 @@ function Articles() {
     <div id="full-page" className="bg-slate-100">
       <div
         id="container"
-        className="mx-auto max-w-screen-xl grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-1 "
+        className="p-4 mx-auto max-w-screen-xl grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-1 "
       >
         <div id="left-container" className="lg:col-span-3">
           {isLoading ? (

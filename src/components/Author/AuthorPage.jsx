@@ -49,7 +49,7 @@ function DislpayArticles({ articles, tab }) {
     <div className="articles-list">
       <div className="bg-white mt-2">
         <div className="min-w-full">
-          <h1 className="text-2xl font-bold text-black my-6">
+          <h1 className="text-xl md:text-2xl ml-2 font-bold text-black my-2 pt-3">
             {tab === "published"
               ? `Contributions`
               : tab === "unpublished"

@@ -5,7 +5,7 @@ function ProtectedRoute({allowedRoles}) {
     const {auth} = useAuth();
 
     if(!auth.isAuthenticated){
-       return(<Navigate to="/login" />)
+       return(<Navigate to="/register" />)
     }
 
     if(!allowedRoles.includes(auth.userInfo.role)){

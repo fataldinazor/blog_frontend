@@ -9,7 +9,21 @@ function storingUserToLS(user, token) {
     return expiry;
   } catch (error) {
     console.log("Couldn't access localStorage", error);
-    return error;
+    return;
+  }
+}
+
+function storingGuestToLS(user, token) {
+  const validity = 30* 24 * 60 * 60 * 1000;
+  const expiry = new Date().getTime() + validity;
+  try {
+    localStorage.setItem("token", token);
+    localStorage.setItem("userInfo", JSON.stringify(user));
+    localStorage.setItem("expiry", expiry.toString());
+    return expiry;
+  } catch (error) {
+    console.log("Couldn't access localStorage", error);
+    return;
   }
 }
 
@@ -39,14 +53,43 @@ function formatDate(date) {
 }
 
 const userMenu = [
-  { name: "Homepage", url: "/" },
   { name: "Articles", url: "/articles" },
+  { name: "Homepage", url: "/" },
 ];
 const authorMenu = [
-  { name: "Profile", url: "/author/" },
   { name: "Create New", url: "/articles/new" },
-  { name: "HomePage", url: "/" },
   { name: "Articles", url: "/articles" },
+  { name: "Profile", url: "/author/" },
+  { name: "Homepage", url: "/" },
 ];
 
-export { storingUserToLS, truncateString, formatDate, userMenu, authorMenu };
+const roles=[
+  {
+    title: "Member",
+    description: "Ideal for those who want to explore and engage with published content.",
+    buttonText: "Become Member",
+    link:"user",
+    features: [
+      "View all published Articles",
+      "Like & Comment on Articles",
+      "Share the Post with others",
+      "View Profiles of Authors"
+    ],
+    includedFeatures: [true, true, true, true],
+  },
+  {
+    title: "Author",
+    description: "Perfect for content creators who want to share their voice and engage with the audience.",
+    buttonText: "Become author",
+    link:"author",
+    features: [
+      "All the access included in Member Role",
+      "Publish your own Articles",
+      "Bookmark articles",
+      "Get a Personalised Profile Page"
+    ],
+    includedFeatures: [true, true, true, true],
+  }
+];
+
+export { storingUserToLS, storingGuestToLS, truncateString, formatDate, userMenu, authorMenu, roles };
