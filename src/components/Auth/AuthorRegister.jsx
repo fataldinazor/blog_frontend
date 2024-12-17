@@ -21,9 +21,9 @@ function AuthorRegister() {
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
+  // checking if fomrm is ready for submission to the backend 
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
-      // console.log(formValues);
       createNewAuthor(
         formValues.fname,
         formValues.lname,
@@ -76,6 +76,7 @@ function AuthorRegister() {
     }
   }
 
+  // validating the data on the frontend
   function validate(values) {
     const errors = {};
     const regExp = { username: /^[a-zA-Z0-9!@#$%^&*()_+]{4,14}$/i };
@@ -103,12 +104,14 @@ function AuthorRegister() {
     return errors;
   }
 
+  //  handling submit action
   function handleSubmit(event) {
     event.preventDefault();
     setFormErrors(validate(formValues));
     setIsSubmit(true);
   }
 
+  //handling change in form at each keystroke
   function handleChange(event) {
     const { name, value } = event.target;
     setFormValues({ ...formValues, [name]: value });
@@ -135,7 +138,7 @@ function AuthorRegister() {
               </Link>
 
               <h2 className="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-                Welcome to InQPress
+                Welcome to InqPress
               </h2>
 
               <p className="mt-4 leading-relaxed text-white/90">

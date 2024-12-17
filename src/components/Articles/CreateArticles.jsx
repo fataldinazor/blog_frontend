@@ -38,21 +38,21 @@ function CreateArticles() {
   //handle blog values after submit and before going to backend
   async function handleBlogValues(image) {
     let cloudinaryUpload = null;
-    let updatedValues=formValues;
+    let updatedValues = formValues;
     setIsLoading(true);
     if (image) {
       try {
         cloudinaryUpload = await uploadToCloudinary(image);
         console.log(cloudinaryUpload);
-        if(cloudinaryUpload.networkError){
+        if (cloudinaryUpload.networkError) {
           toast.error(cloudinaryUpload.msg);
           throw new Error(cloudinaryUpload.msg);
         }
-        if(!cloudinaryUpload.success){
+        if (!cloudinaryUpload.success) {
           toast.error(cloudinaryUpload.msg);
-          updatedValues.imageUrl=null;
-        }else{
-          updatedValues.imageUrl=cloudinaryUpload.image_url;
+          updatedValues.imageUrl = null;
+        } else {
+          updatedValues.imageUrl = cloudinaryUpload.image_url;
         }
       } catch (error) {
         console.error("Error uploading to Cloudinary", error);
@@ -156,109 +156,111 @@ function CreateArticles() {
   }
 
   return (
-    <div
-      id="new-post-inputs"
-      className="min-h-full  sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
-    >
-      <div id="new-post-image-btn" className="mb-4">
-        {!imagePreview ? (
-          <>
-            <input
-              type="file"
-              id="coverImage"
-              name="image"
-              accept=".jpg, .png, .jpeg"
-              onChange={handleImageSelection}
-              className="w-full text-sm text-white-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-300 file:text-gray-700 hover:file:bg-gray-400"
-            />
-            {imageErrors && (
-              <p className="mt-2 text-sm text-gray-500">{imageErrors}</p>
-            )}
-          </>
-        ) : (
-          <div className="flex items-center">
-            <img
-              src={imagePreview}
-              alt="cover-image"
-              className="w-36 object-cover rounded-md border border-gray-300"
-            />
+    <div className="h-full flex justify-center items-center">
+      <div
+        id="new-post-inputs"
+        className="h-full sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
+      >
+        <div id="new-post-image-btn" className="mb-4">
+          {!imagePreview ? (
+            <>
+              <input
+                type="file"
+                id="coverImage"
+                name="image"
+                accept=".jpg, .png, .jpeg"
+                onChange={handleImageSelection}
+                className="w-full cursor-pointer text-sm text-white-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-300 file:text-gray-700 hover:file:bg-gray-400"
+              />
+              {imageErrors && (
+                <p className="mt-2 text-sm text-gray-500">{imageErrors}</p>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center">
+              <img
+                src={imagePreview}
+                alt="cover-image"
+                className="w-36 object-cover rounded-md border border-gray-300"
+              />
+              <button
+                onClick={handleRemoveClick}
+                className="ml-4 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                <TrashIcon height={20} width={20} />
+              </button>
+            </div>
+          )}
+        </div>
+        <div id="new-post-title-div" className="mb-4">
+          <label htmlFor="new-post-title" className="block mb-2 font-semibold">
+            Title
+          </label>
+          <textarea
+            type="text"
+            id="new-post-title"
+            name="title"
+            onChange={handleChange}
+            rows={2}
+            cols={35}
+            className="text-2xl ms:text-4xl lg:text-4xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          ></textarea>
+          {formErrors.title && (
+            <p className="mt-2 text-sm text-gray-500">{formErrors.title}</p>
+          )}
+        </div>
+        <div id="new-post-content-div" className="w-full mb-4">
+          <Editor
+            apiKey={tinymceKey}
+            onInit={(evt, editor) => (editorRef.current = editor)}
+            initialValue="<p>Write your content here!</p>"
+            init={{
+              height: 300,
+              menubar: false,
+              plugins: [
+                "anchor",
+                "autolink",
+                "charmap",
+                "codesample",
+                "emoticons",
+                "image",
+                "link",
+                "lists",
+                "media",
+                "searchreplace",
+                "table",
+                "visualblocks",
+                "wordcount",
+              ],
+              toolbar:
+                "undo redo | formatselect | " +
+                "bold italic backcolor | alignleft aligncenter " +
+                "alignright alignjustify | bullist numlist outdent indent | " +
+                "removeformat | help",
+              content_style:
+                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; background-color: #f5f5f5; color: #333333; }",
+            }}
+          />
+          {formErrors && (
+            <p className="mt-2 text-sm text-gray-500">{formErrors.content}</p>
+          )}
+        </div>
+        <div id="new-post-published" className="mt-4 text-xs">
+          <label htmlFor="isPublished" className="block">
             <button
-              onClick={handleRemoveClick}
-              className="ml-4 text-sm font-medium text-gray-700 hover:text-gray-900"
+              className="p-2 px-3 mr-2 bg-black text-white rounded-md shadow-md hover:bg-white hover:text-black"
+              onClick={() => handleSubmit(true)}
             >
-              <TrashIcon height={20} width={20} />
+              Publish
             </button>
-          </div>
-        )}
-      </div>
-      <div id="new-post-title-div" className="mb-4">
-        <label htmlFor="new-post-title" className="block mb-2 font-semibold">
-          Title
-        </label>
-        <textarea
-          type="text"
-          id="new-post-title"
-          name="title"
-          onChange={handleChange}
-          rows={2}
-          cols={35}
-          className="text-2xl ms:text-4xl lg:text-4xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
-        ></textarea>
-        {formErrors.title && (
-          <p className="mt-2 text-sm text-gray-500">{formErrors.title}</p>
-        )}
-      </div>
-      <div id="new-post-content-div" className="w-full mb-4">
-        <Editor
-          apiKey={tinymceKey}
-          onInit={(evt, editor) => (editorRef.current = editor)}
-          initialValue="<p>Write your content here!</p>"
-          init={{
-            height: 300,
-            menubar: false,
-            plugins: [
-              "anchor",
-              "autolink",
-              "charmap",
-              "codesample",
-              "emoticons",
-              "image",
-              "link",
-              "lists",
-              "media",
-              "searchreplace",
-              "table",
-              "visualblocks",
-              "wordcount",
-            ],
-            toolbar:
-              "undo redo | formatselect | " +
-              "bold italic backcolor | alignleft aligncenter " +
-              "alignright alignjustify | bullist numlist outdent indent | " +
-              "removeformat | help",
-            content_style:
-              "body { font-family:Helvetica,Arial,sans-serif; font-size:14px; background-color: #f5f5f5; color: #333333; }",
-          }}
-        />
-        {formErrors && (
-          <p className="mt-2 text-sm text-gray-500">{formErrors.content}</p>
-        )}
-      </div>
-      <div id="new-post-published" className="mt-4 text-xs">
-        <label htmlFor="isPublished" className="block">
-          <button
-            className="p-2 px-3 mr-2 bg-black text-white rounded-md shadow-md hover:bg-white hover:text-black"
-            onClick={() => handleSubmit(true)}
-          >
-            Publish
-          </button>
-          <button
-            className="p-2 text-gray-600"
-            onClick={() => handleSubmit(false)}
-          >
-            Save as Draft
-          </button>
-        </label>
+            <button
+              className="p-2 text-gray-600"
+              onClick={() => handleSubmit(false)}
+            >
+              Save as Draft
+            </button>
+          </label>
+        </div>
       </div>
     </div>
   );

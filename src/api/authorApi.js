@@ -34,8 +34,8 @@ const uploadToCloudinaryAPI = async (image) => {
   }
 };
 
+// update author page
 const updateAuthorPageAPI = async (formValues, token, authorId) => {
-  console.log(formValues);
   const url = `${apiUrl}users/${authorId}`;
   try {
     const response = await fetch(url, {
@@ -64,6 +64,7 @@ const updateAuthorPageAPI = async (formValues, token, authorId) => {
   }
 };
 
+// to fetch author artciles (published or unpublished)
 const fetchAuthorArticlesAPI = async (articleType, userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}/posts/${articleType}`;
   try {
@@ -84,6 +85,7 @@ const fetchAuthorArticlesAPI = async (articleType, userToken, authorId) => {
   }
 };
 
+// to fetch the author bookmarked posts
 const fetchBookmarkedPostsAPI = async (userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}/posts/bookmarks`;
   try {
@@ -104,6 +106,7 @@ const fetchBookmarkedPostsAPI = async (userToken, authorId) => {
   }
 };
 
+//fetching the author profile details
 const fetchAuthorDetailsAPI = async (userToken, authorId) => {
   const url = `${apiUrl}users/${authorId}`;
   try {

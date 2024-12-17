@@ -261,7 +261,6 @@ function Articles() {
       fetchData();
     // }, 3000);
   }, [auth.token]);
-
   return (
     <div id="full-page" className="bg-slate-100">
       <div

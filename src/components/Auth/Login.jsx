@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { storingGuestToLS, storingUserToLS } from "@/utils/helper";
 import { guestLoginAPI, loginUserAPI } from "@/api/authApi";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { BlogIcon } from "@/assets/Icons";
 import { UserIcon } from "@/assets/Icons";
 import { AuthLoadingOverlay} from "../Loading";
@@ -91,12 +91,14 @@ function Login() {
     return errors;
   }
 
+  // handle submit form action 
   function handleSubmit(e) {
     e.preventDefault();
     setIsSubmit(true);
     setFormErrors(validate(formValues));
   }
 
+  // handle change in the input boxes at each keystroke 
   function handleChange(e) {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });

@@ -1,5 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
-import { useSearchParams, Link, useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import {
+  useSearchParams,
+  Link,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   fetchAuthorArticlesAPI,
@@ -7,9 +12,7 @@ import {
 } from "@/api/authorApi";
 import { formatDate } from "@/utils/helper";
 import { BlogIcon, OptionIcon } from "@/assets/Icons";
-// import { Triangle } from "react-loader-spinner";
 import { Loading } from "../Loading";
-import NotAuthorized from "../Error/AuthorizeError";
 import toast from "react-hot-toast";
 
 function ShowBtn({ article, setShowOptions, showOptions }) {
@@ -116,10 +119,12 @@ function AuthorArticles({ tab }) {
   const params = useParams();
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cachedArticles, setCachedArticles] = useState({
+  const cachedArticles = useRef({
     published: null,
     unpublished: null,
+    bookmarks: null,
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,17 +160,13 @@ function AuthorArticles({ tab }) {
         setIsLoading(true);
         try {
           const result = await fetchFunction();
-          // console.log(result.posts);
           if (result.networkError) {
             toast.error(result.msg);
             return;
           }
           if (result.success) {
             setArticles(result.posts);
-            setCachedArticles((prevValue) => ({
-              ...prevValue,
-              [cacheKey]: result.posts,
-            }));
+            cachedArticles.current[cacheKey] = result.posts;
           } else {
             toast.error(`Failed to fetch ${tab} data`);
           }
@@ -176,11 +177,14 @@ function AuthorArticles({ tab }) {
         }
       }
     };
-    // setIsLoading(true);
-    // setTimeout(() => {
-      fetchData();
-    // }, 2000);
-  }, [tab, params.authorId, auth.token, cachedArticles]);
+    fetchData();
+  }, [tab, params.authorId, auth.token]);
+
+  // if user not the owner of the profile (can't acess the unpublished and bookmarks)
+  if (tab === "unpublished" && auth.userInfo.id !== parseInt(params.authorId)) {
+    navigate("/403");
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -188,10 +192,6 @@ function AuthorArticles({ tab }) {
         <Loading color="black" height="40" width="40" />
       </div>
     );
-  }
-
-  if (tab === "unpublished" && auth.userInfo.id !== parseInt(params.authorId)) {
-    return <NotAuthorized />;
   }
 
   return articles && articles.length ? (

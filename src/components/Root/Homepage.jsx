@@ -16,6 +16,7 @@ export function CarouselSize() {
   const [articles, setArticles] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // fetching articles to be shown on the carausal 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -28,10 +29,7 @@ export function CarouselSize() {
         setIsLoading(false);
       }
     };
-    // setIsLoading(true);
-    // setTimeout(() => {
     fetchData();
-    // }, 5000);
   }, []);
 
   if (isLoading) {

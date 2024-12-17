@@ -52,7 +52,7 @@ function AuthProvider({ children }) {
   function logout() {
     localStorage.clear();
     setAuth({ isAuthenticated: false, token: "", userInfo: "" });
-    navigate("/login");
+    navigate("/register");
   }
 
   return (

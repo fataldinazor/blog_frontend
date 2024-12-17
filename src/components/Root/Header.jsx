@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { BlogIcon } from "../../assets/Icons";
+import { BlogIcon } from "@/assets/Icons";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { userMenu, authorMenu } from "../../utils/helper";
+import { useAuth } from "@/context/AuthContext";
+import { userMenu, authorMenu } from "@/utils/helper";
 
 function DropDown() {
   const [isOpen, setIsOpen] = useState(false);
   const { auth, logout } = useAuth();
   const dropdownRef = useRef();
 
+  // for recoganising if the user clicked outsise the list to close it 
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -112,14 +113,14 @@ function Header() {
     >
       <Link to="/" id="logo" className="flex items-center">
         <BlogIcon height="30" with="30" color="white" />
-        <h1 className="hidden md:block text-3xl font-bold ml-2">InQPress</h1>
+        <h1 className="hidden md:block text-3xl font-bold ml-2">InqPress</h1>
       </Link>
 
       <div id="header-navbar" className="flex items-center space-x-6">
-        <div id="articlesNav" className="cursor-pointer hover:text-gray-300">
+        <div id="articlesNav" className="cursor-pointer">
           {auth.isAuthenticated && auth.userInfo.role === "AUTHOR" ? (
             <Link to="/articles/new">
-              <button className="hidden px-5 py-3 border-white border rounded-lg text-xs font-bold md:block">
+              <button className="hidden md:block px-5 py-3 border-white border rounded-lg text-xs">
                 Create New
               </button>
             </Link>
@@ -133,7 +134,7 @@ function Header() {
             <Link to="/login">
               <button
                 id="loginBtn"
-                className="px-4 py-2 text-xs border-white border-2 text-white rounded-lg hover:text-black hover:bg-white shadow-md transition duration-300"
+                className="px-4 py-2 text-xs md:text-sm border-white border-2 text-white rounded-md hover:text-black hover:bg-white shadow-md transition duration-300"
               >
                 Login
               </button>
@@ -141,7 +142,7 @@ function Header() {
             <Link to="/register">
               <button
                 id="registerBtn"
-                className="px-4 py-2 text-xs border-white border-2 text-white rounded-lg hover:text-black hover:bg-white shadow-md transition duration-300"
+                className="px-4 py-2 text-xs md:text-sm border-white border-2 text-white rounded-md hover:text-black hover:bg-white shadow-md transition duration-300"
               >
                 Register
               </button>

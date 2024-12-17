@@ -111,6 +111,7 @@ function Comments({ comments, setComments }) {
                 <footer className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
                     <img
+                    loading="lazy"
                       className="w-8 h-8 rounded-full mr-3"
                       src={
                         "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"

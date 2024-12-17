@@ -113,6 +113,7 @@ function MoreArticles() {
                   {article.image_url && (
                     <div>
                       <img
+                        loading="lazy"
                         alt="cover-image"
                         src={article.image_url}
                         className="w-full object-cover h-40"
@@ -423,7 +424,7 @@ function ArticleId() {
 
   //fetching the article with id
   useEffect(() => {
-    // window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -455,9 +456,9 @@ function ArticleId() {
         setIsLoading(false);
       }
     };
-    setTimeout(() => {
+    // setTimeout(() => {
       fetchData();
-    }, 2000);
+    // }, 2000);
   }, [params.articleId]);
 
   //this is for recoganising the entrance of comment section in user view

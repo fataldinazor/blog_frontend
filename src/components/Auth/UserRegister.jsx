@@ -6,6 +6,8 @@ import { signupUserAPI, guestLoginAPI } from "@/api/authApi";
 import { BlogIcon, UserIcon } from "@/assets/Icons";
 import toast from "react-hot-toast";
 import { AuthLoadingOverlay } from "../Loading";
+
+
 function UserRegister() {
   const [formValues, setFormValues] = useState({
     username: "",
@@ -86,6 +88,7 @@ function UserRegister() {
     }
   }
 
+  // signing up the guest user  
   const handleGuestUser = async () => {
     setIsLoading(true);
     try {
