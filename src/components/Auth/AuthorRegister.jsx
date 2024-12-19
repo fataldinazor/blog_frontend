@@ -19,9 +19,9 @@ function AuthorRegister() {
   const [isSubmit, setIsSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setAuth } = useAuth();
+  const { auth, setAuth } = useAuth();
 
-  // checking if fomrm is ready for submission to the backend 
+  // checking if fomrm is ready for submission to the backend
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
       createNewAuthor(
@@ -33,6 +33,10 @@ function AuthorRegister() {
       );
     }
   }, [formErrors]);
+
+  if (auth.isAuthenticated) {
+    navigate("/articles");
+  }
 
   // sending the values to the backend bia api
   async function createNewAuthor(
@@ -65,11 +69,14 @@ function AuthorRegister() {
         );
         navigate("/articles");
       } else {
-        toast.error(result.msg || "Problem creating Author Profile");
+        toast.error(
+          result.msg.errors[0].msg || "Problem creating Author Profile"
+        );
+        console.log("Failed to create a new User: ", result.msg.errors[0]);
+        return;
         // console.log(result);
       }
     } catch (error) {
-      console.log("Error occured", error);
       toast.error("Failed to create Author");
     } finally {
       setIsLoading(false);
@@ -127,8 +134,9 @@ function AuthorRegister() {
         <div className="lg:grid lg:min-h-full lg:grid-cols-12">
           <section className="relative  flex h-32 items-end bg-gray-900 lg:col-span-5 lg:h-full xl:col-span-6 rounded-lg">
             <img
+              loading="lazy"
               alt=""
-              src="https://images.unsplash.com/photo-1617195737496-bc30194e3a19?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80"
+              src="https://images.unsplash.com/reserve/LJIZlzHgQ7WPSh5KVTCB_Typewriter.jpg?q=80&w=1896&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               className="absolute inset-0 h-full w-full object-cover opacity-80 lg:rounded-l-lg"
             />
 
@@ -137,11 +145,11 @@ function AuthorRegister() {
                 <BlogIcon height="40" width="40" color="white" fill="white" />
               </Link>
 
-              <h2 className="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
+              <h2 className="mt-6 text-xl font-bold text-white sm:text-2xl md:text-3xl">
                 Welcome to InqPress
               </h2>
 
-              <p className="mt-4 leading-relaxed text-white/90">
+              <p className="mt-4 text-xs leading-relaxed text-white/90">
                 Stay updated with the latest trends, insights, and tips from the
                 world of technology, development, and more.
               </p>
@@ -159,7 +167,7 @@ function AuthorRegister() {
                   <BlogIcon height="35" width="35" />
                 </Link>
 
-                <h1 className="mt-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">
+                <h1 className="mt-2 text-xl font-bold text-gray-900 sm:text-3xl md:text-2xl">
                   Welcome to InqPress
                 </h1>
               </div>

@@ -61,7 +61,7 @@ function ArticleList({ articles, articlesPerPage }) {
         currPage * articlesPerPage
       )
     );
-    scrollTo(0,0);
+    scrollTo(0, 0);
   }, [currPage]);
 
   return (
@@ -78,10 +78,10 @@ function ArticleList({ articles, articlesPerPage }) {
                 key={article.id}
                 className="max-w-4xl overflow-hidden bg-white rounded-lg shadow-md light:bg-white hover:shadow-xl"
               >
-                {article.image_url && (
+                {article?.image_url && (
                   <img
                     className="object-cover w-full h-40 md:h-64 "
-                    src={article.image_url}
+                    src={article?.image_url}
                     alt="cover-image"
                   />
                 )}
@@ -109,7 +109,7 @@ function ArticleList({ articles, articlesPerPage }) {
                       <img
                         className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
                         src={
-                          article.user.profile.avatar_url ||
+                          article?.user?.profile?.avatar_url ||
                           "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
                         }
                         alt="Avatar"
@@ -164,8 +164,8 @@ function TopAuthorList() {
         const result = await fetchTopAuthorsAPI(auth.token);
         if (!result.success) {
           setAuthors(result);
-        }else{
-          setAuthors(result.authors)
+        } else {
+          setAuthors(result.authors);
         }
       } catch (error) {
         console.error(`Couldn't Fetch Authors ${error}`);
@@ -194,7 +194,7 @@ function TopAuthorList() {
             role="list"
             className="divide-y divide-gray-200 dark:divide-gray-700"
           >
-            {authors.length ? (
+            {authors && authors.length ? (
               authors.map((author) => (
                 <li key={author?.username} className="py-3 sm:py-4">
                   <div className="flex items-center">
@@ -209,17 +209,22 @@ function TopAuthorList() {
                       />
                     </div>
                     <div className="flex-1 min-w-0 ms-4">
-                      <Link to={`/author/${author.id}`}>
+                      <Link
+                        to={`/author/${author.id}`}
+                        className="hover:underline"
+                      >
                         <p className="text-sm font-semibold text-gray-900 truncate">
                           {author.fname} {author.lname}
                         </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {author?.username || "No username provided"}
+                        </p>
                       </Link>
-                      <p className="text-sm text-gray-500 truncate">
-                        {author?.username || "No email provided"}
-                      </p>
                     </div>
                     <div className="inline-flex items-center text-base font-semibold ">
-                      {author?._count?.posts || 0} Posts
+                      {author?._count?.posts > 1
+                        ? `${author?._count?.posts || 0} Posts`
+                        : `${author?._count?.posts || 0}  Post`}
                     </div>
                   </div>
                 </li>
@@ -258,11 +263,11 @@ function Articles() {
     };
     // setIsLoading(true);
     // setTimeout(() => {
-      fetchData();
+    fetchData();
     // }, 3000);
   }, [auth.token]);
   return (
-    <div id="full-page" className="bg-slate-100">
+    <div id="full-page" className="h-full min-h-screen w-full ">
       <div
         id="container"
         className="p-4 mx-auto max-w-screen-xl grid grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-1 "
@@ -274,8 +279,12 @@ function Articles() {
             </div>
           ) : (
             <div>
-              {articles.length && (
+              {articles.length ? (
                 <ArticleList articles={articles} articlesPerPage={10} />
+              ) : (
+                <div className="text-center text-gray-400 font-bold bold text-2xl md:text-3xl my-10">
+                  No Articles to Available to Show
+                </div>
               )}
             </div>
           )}

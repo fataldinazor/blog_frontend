@@ -13,7 +13,7 @@ function Login() {
   const [formErrors, setFormErrors] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
-  const { setAuth } = useAuth();
+  const { auth, setAuth } = useAuth();
   const [isLoading, setIsLoading] = useState();
 
   //checking if formErrors exists else go for logigging in the client
@@ -50,6 +50,10 @@ function Login() {
       setIsLoading(false);
     }
   };
+
+  if(auth.isAuthenticated){
+    navigate("/articles")
+  }
 
   // logging in the client from the backend
   async function loginUser(username, password) {
@@ -108,6 +112,7 @@ function Login() {
     return <AuthLoadingOverlay />;
   }
 
+
   return (
     <div
       id="login-container"
@@ -117,7 +122,7 @@ function Login() {
         <div
           className="hidden bg-cover lg:block lg:w-1/2"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1606660265514-358ebbadc80d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1575&q=80')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1770&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
           }}
         ></div>
 

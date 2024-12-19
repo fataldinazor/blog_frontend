@@ -43,7 +43,7 @@ function CreateArticles() {
     if (image) {
       try {
         cloudinaryUpload = await uploadToCloudinary(image);
-        console.log(cloudinaryUpload);
+        // console.log(cloudinaryUpload);
         if (cloudinaryUpload.networkError) {
           toast.error(cloudinaryUpload.msg);
           throw new Error(cloudinaryUpload.msg);
@@ -58,7 +58,6 @@ function CreateArticles() {
         console.error("Error uploading to Cloudinary", error);
       }
     }
-    // sendValtoBackend({ ...formValues, imageUrl: uploadedImageUrl });
     const result = await createNewArticleAPI(auth.token, updatedValues);
     // console.log(result);
     if (!result.success) {
@@ -156,10 +155,10 @@ function CreateArticles() {
   }
 
   return (
-    <div className="h-full flex justify-center items-center">
+    <div className="h-full bg-slate-100 flex justify-center items-center">
       <div
         id="new-post-inputs"
-        className="h-full sm:max-w-screen-sm md:max-w-screen-lg text-black p-6 rounded-md"
+        className="h-full sm:max-w-screen-sm md:max-w-screen-lg lg:max-w-2xl text-black p-6 rounded-md"
       >
         <div id="new-post-image-btn" className="mb-4">
           {!imagePreview ? (
@@ -203,7 +202,7 @@ function CreateArticles() {
             onChange={handleChange}
             rows={2}
             cols={35}
-            className="text-2xl ms:text-4xl lg:text-4xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="text-xl ms:text-3xl lg:text-3xl font-bold w-full min-h-10 max-h-96 overflow-x-hidden overflow-y-auto bg-gray-200 text-gray-800 border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
           ></textarea>
           {formErrors.title && (
             <p className="mt-2 text-sm text-gray-500">{formErrors.title}</p>
@@ -215,7 +214,7 @@ function CreateArticles() {
             onInit={(evt, editor) => (editorRef.current = editor)}
             initialValue="<p>Write your content here!</p>"
             init={{
-              height: 300,
+              height: 350,
               menubar: false,
               plugins: [
                 "anchor",

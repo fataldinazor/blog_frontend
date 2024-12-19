@@ -169,7 +169,7 @@ function Article({ article, user }) {
           <header className="mx-auto max-w-screen-xl flex flex-col text-left items-start">
             <img
               className="w-full object-cover h-60 md:h-80 rounded-tl-lg rounded-tr-md"
-              src={article.image_url}
+              src={article?.image_url}
               alt="Featured Image"
             />
           </header>
@@ -198,7 +198,7 @@ function Article({ article, user }) {
                 <img
                   className="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full shadow-sm"
                   src={
-                    user.profile.avatar_url ||
+                    user?.profile?.avatar_url ||
                     "https://res.cloudinary.com/dafr5o0f3/image/upload/v1734374437/x7hjwpduocau04iooenu.png"
                   }
                   alt="Avatar"
@@ -387,19 +387,21 @@ function PostInteraction({ counts, commentRef, comments }) {
         <p>{commentCount}</p>
       </div>
 
-      <div
-        id="bookmark-article"
-        className="flex gap-2 lg:flex-col items-center"
-      >
-        <button onClick={handleBookmarkBtn}>
-          {isBookmarked ? (
-            <BookmarkIcon fillColor="#000000" />
-          ) : (
-            <BookmarkIcon fillColor="#EFF2F4" />
-          )}
-        </button>
-        <p>{bookmarkCount}</p>
-      </div>
+      {(auth.userInfo.role === "AUTHOR" || auth.userInfo.role === "ADMIN") && (
+        <div
+          id="bookmark-article"
+          className="flex gap-2 lg:flex-col items-center"
+        >
+          <button onClick={handleBookmarkBtn}>
+            {isBookmarked ? (
+              <BookmarkIcon fillColor="#000000" />
+            ) : (
+              <BookmarkIcon fillColor="#EFF2F4" />
+            )}
+          </button>
+          <p>{bookmarkCount}</p>
+        </div>
+      )}
 
       <div id="share-article">
         <button onClick={copyToClipboard}>
@@ -457,7 +459,7 @@ function ArticleId() {
       }
     };
     // setTimeout(() => {
-      fetchData();
+    fetchData();
     // }, 2000);
   }, [params.articleId]);
 

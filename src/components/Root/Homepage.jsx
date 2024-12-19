@@ -16,7 +16,7 @@ export function CarouselSize() {
   const [articles, setArticles] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // fetching articles to be shown on the carausal 
+  // fetching articles to be shown on the carausal
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -36,7 +36,7 @@ export function CarouselSize() {
     return <Loading color="white" height="50" width="50" />;
   }
 
-  if (articles) {
+  if (articles && articles.length) {
     return (
       <Carousel
         opts={{ align: "start", loop: true }}
@@ -79,7 +79,11 @@ export function CarouselSize() {
       </Carousel>
     );
   } else {
-    return <div>Couldn't Fetch Articles</div>;
+    return (
+      <div className="font-semibold text-2xl text-gray-400 mt-10">
+        Couldn't Fetch Articles
+      </div>
+    );
   }
 }
 
@@ -95,22 +99,27 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-black bg-opacity-70"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col justify-center items-center sm:gap-10">
-        <div className="lg:hidden pb-5">
+      <div className="relative z-10 flex flex-col justify-center items-center sm:gap-10 md:gap-1">
+        <div className="lg:hidden pb-5 md:pb-2">
           <BlogIcon color="white" height="50" width="50" />
         </div>
         <div className="relative z-10 text-center px-10 lg:max-w-screen-md ">
           <h1 className="text-2xl md:text-5xl font-bold tracking-widest mb-4 animate__animated animate__fadeIn animate__delay-1s">
             Curating Thoughts <br /> Shaping Futures
           </h1>
-          <p className="text-sm md:text-xl mb-6 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
+          <p className="text-sm md:text-xl mb-4 opacity-80 animate__animated animate__fadeIn animate__delay-2s">
             Stay updated with the latest trends, insights, and tips from the
             world of technology, development, and more.
           </p>
+          <Link to="/register">
+            <button className="px-4 py-2 mb-4 border-2 border-gray-400 bg-black/40 text-white font-semibold text-md md:text-xl rounded-full hover:bg-white hover:text-black">
+              Start your Journey
+            </button>
+          </Link>
         </div>
       </div>
 
-      <div className="relative z-10 w-full mt-12 md:mt-8 lg:mt-2 text-white">
+      <div className="relative z-10 w-full mt-12 md:mt-4 lg:mt-2 text-white">
         <div className="px-4 sm:px-8 md:px-12">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-4 md:mb-8">
             Featured Articles

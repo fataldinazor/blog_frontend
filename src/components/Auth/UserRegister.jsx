@@ -18,7 +18,7 @@ function UserRegister() {
   const [isSubmit, setIsSubmit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setAuth } = useAuth();
+  const { auth, setAuth } = useAuth();
 
   useEffect(() => {
     if (Object.keys(formErrors).length === 0 && isSubmit) {
@@ -29,6 +29,10 @@ function UserRegister() {
       );
     }
   }, [formErrors]);
+
+    if (auth.isAuthenticated) {
+      navigate("/articles");
+    }
 
   const validate = ({ username, password, confirmPassword }) => {
     const errors = {};
@@ -76,9 +80,10 @@ function UserRegister() {
         navigate("/articles");
       } else {
         toast.error(
-          result.msg || "Failed to create a new User! Try again Later"
+          result.msg.errors[0].msg || "Failed to create a new User! Try again Later"
         );
-        console.log("Failed to create a new User");
+        console.log("Failed to create a new User: ", result.msg.errors[0]);
+        return;
       }
     } catch (error) {
       console.log("Error occurred: ", error);
@@ -142,7 +147,7 @@ function UserRegister() {
         <div
           className="hidden bg-cover lg:block lg:w-1/2"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1606660265514-358ebbadc80d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1575&q=80')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1770&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
           }}
         ></div>
 
