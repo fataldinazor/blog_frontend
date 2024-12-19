@@ -445,6 +445,7 @@ function ArticleId() {
             toast.error(result.msg);
             setIsLoading(false);
             navigate("/404");
+            return;
           } else {
             toast.error(result.msg);
           }
